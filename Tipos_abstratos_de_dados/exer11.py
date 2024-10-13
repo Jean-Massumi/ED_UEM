@@ -3,6 +3,8 @@ class Robo:
     Um robo com um nome que está em uma posição da linha do jogo, que deve
     ser um valor entre 1 e 10.
     '''
+    
+    info_robo: str
 
     def __init__(self, nome: str):
         '''
@@ -13,7 +15,9 @@ class Robo:
         >>> r.info()
         'r2d2 (1)'
         '''
-        return
+        
+        self.info_robo = nome + " (1)"
+        
 
     def posicao(self) -> int:
         '''
@@ -25,7 +29,16 @@ class Robo:
         >>> r.posicao()
         3
         '''
-        return 0
+        posicao_str = self.info_robo[-4:]
+        
+        if posicao_str[0] == " ":
+            posicao_int = int(posicao_str[2:3])
+            
+        else:
+            posicao_int = int(posicao_str[1:3])
+        
+        return posicao_int
+
 
     def info(self) -> str:
         '''
@@ -38,7 +51,7 @@ class Robo:
         >>> r.info()
         'rob (3)'
         '''
-        return ''
+        return self.info_robo
 
     def move(self, n: int):
         '''
@@ -68,4 +81,21 @@ class Robo:
         >>> r.posicao()
         1
         '''
-        return
+        
+        posicao_str = self.info_robo[-4:]
+        
+        if posicao_str[0] == " ":
+            posicao_int = int(posicao_str[2:3])
+            
+        else:
+            posicao_int = int(posicao_str[1:3])
+        
+        posicao_int += n
+        
+        if posicao_int > 10:
+            posicao_int = 10
+            
+        elif posicao_int < 1:
+            posicao_int = 1
+            
+        self.info_robo = self.info_robo[:-4] + " (" + str(posicao_int) + ")"

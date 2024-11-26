@@ -41,13 +41,18 @@ class PilhaUsandoFilas:
         Insere um elemento no topo da pilha.
         '''
     
-        if (self.fila_entrada.fim == len(self.fila_entrada.valores) - 1):
+        if (self.fila_saida.fim == len(self.fila_saida.valores) - 1):
             raise ValueError('pilha cheia')
         
-        if (self.fila_saida.fim == 0):
+        # Adiciona o item na fila_entrada
+        self.fila_entrada.enfileira(item)
+
+        # Transfere todos os elementos de fila_saida para fila_entrada
+        while not self.fila_saida.vazia():
             self.fila_entrada.enfileira(self.fila_saida.desenfileira())
-    
-        self.fila_saida.enfileira(item)
+
+        # Troca as referências de fila_entrada e fila_saida
+        self.fila_entrada, self.fila_saida = self.fila_saida, self.fila_entrada
     
     
     def pop(self) -> str:
@@ -58,16 +63,12 @@ class PilhaUsandoFilas:
         if (self.vazia()):
             raise ValueError('pilha vazia')
         
-        elemento = self.fila_saida.desenfileira()
-        
-        while  not (self.fila_entrada.vazia()):
-            self.push(self.fila_entrada.desenfileira())
-        
-        return elemento
+        # Remove o elemento do início da fila_saida, que é o topo da pilha
+        return self.fila_saida.desenfileira()
         
     def vazia(self) -> None:
         '''
         Verifica se a pilha está vazia.
         '''
     
-        return self.fila_entrada.vazia() and self.fila_saida.vazia()
+        return self.fila_saida.vazia()

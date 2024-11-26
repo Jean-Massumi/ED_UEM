@@ -1,6 +1,6 @@
 from ed import array
 
-CAPACIDADE = 1000000
+CAPACIDADE = 10000
 
 
 class Fila:

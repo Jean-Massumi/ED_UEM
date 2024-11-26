@@ -11,7 +11,7 @@ def operacoes(fila: FilaF | FilaIF, n: int):
     for num in range(1, (n + 1)):
         fila.enfileira(str(num))
         
-    while (fila.vazia()):
+    while not(fila.vazia()):
         fila.desenfileira()
     
 
@@ -20,7 +20,7 @@ def main():
     from timeit import timeit
     for fila in ['FilaF', 'FilaIF']:
         print(fila)
-        for n in [100000, 400000, 1000000]:
+        for n in [1000, 2000, 5000]:
             tempo = timeit(f'operacoes({fila}(), {n})',
                            setup=f'from __main__ import operacoes, {fila}',
                            number=10)

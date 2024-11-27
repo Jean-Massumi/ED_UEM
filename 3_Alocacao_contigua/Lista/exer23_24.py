@@ -223,3 +223,24 @@ class Lista:
         for i in range(self.num_itens()):
             valores[i] = self.valores[i]
         self.valores = valores
+
+
+    def acrescenta(self, item: int) -> None:
+        '''
+        Acrescenta um elemento no final da lista.
+        
+        Exemplo
+        >>> lst = Lista()
+        >>> lst.str()
+        '[]'
+        >>> lst.insere(0, 7)
+        >>> lst.insere(1, 20)
+        >>> lst.str()
+        '[7, 20]'
+        >>> lst.acrescenta(3)
+        >>> lst.str()
+        '[7, 20, 3]'
+        '''
+
+        
+

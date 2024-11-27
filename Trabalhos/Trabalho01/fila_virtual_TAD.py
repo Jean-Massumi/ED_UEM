@@ -30,6 +30,63 @@ class FilaVirtual:
     - As demandas prioritárias ficam na frente das gerais
     - Cada demanda geral só pode ser “passada” por até duas prioritárias
     
+    Exemplo
+    >>> f = FilaVirtual()
+    >>> f.vazia()
+    True
+    >>> f.enfileira_geral()
+    1
+    >>> f.enfileira_geral()
+    2
+    >>> f.enfileira_geral()
+    3
+    >>> f.str()
+    '[1, 2, 3]'
+    >>> f.enfileira_prioritaria()
+    4
+    >>> f.enfileira_prioritaria()
+    5
+    >>> f.enfileira_prioritaria()
+    6
+    >>> f.str()
+    '[4, 5, 1, 2, 3, 6]'
+    >>> f.enfileira_geral()
+    7
+    >>> f.enfileira_geral()
+    8
+    >>> f.enfileira_prioritaria()
+    9
+    >>> f.str()
+    '[4, 5, 1, 2, 3, 6, 9, 7, 8]'
+    >>> f.enfileira_geral()
+    10
+    >>> f.enfileira_prioritaria()
+    11
+    >>> f.str()
+    '[4, 5, 1, 2, 3, 6, 9, 11, 7, 8, 10]'
+    >>> f.vazia()
+    False
+    >>> f.desenfileira()
+    4
+    >>> f.desenfileira()
+    5
+    >>> f.str()
+    '[1, 2, 3, 6, 9, 11, 7, 8, 10]'
+    >>> while not f.vazia():
+    ...     f.desenfileira()
+    1
+    2
+    3
+    6
+    9
+    11
+    7
+    8
+    10
+    >>> f.vazia()
+    True
+    >>> f.str()
+    '[]'
     '''
 
     
@@ -151,7 +208,3 @@ class FilaVirtual:
         return NotImplementedError
     
     
-    
-        
-        
-        

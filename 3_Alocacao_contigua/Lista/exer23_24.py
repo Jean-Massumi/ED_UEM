@@ -1,3 +1,4 @@
+from __future__ import annotations
 from ed import array
 
 # Capacidade inicial alocada para a lista
@@ -240,7 +241,37 @@ class Lista:
         >>> lst.acrescenta(3)
         >>> lst.str()
         '[7, 20, 3]'
+        >>> lst.acrescenta(11)
+        >>> lst.str()
+        '[7, 20, 3, 11]'
         '''
 
+        self.valores[self.tamanho] = item
+        self.tamanho += 1
         
+        
+    def eq (self, lst: Lista) -> bool:  
+        '''
+        Devolve True se duas listas são iguais. False caso contrario.
+        
+        Exemplo
+        >>> lst = Lista()
+        >>> lst1 = Lista()
+        >>> lst.eq(lst1)
+        True
+        >>> lst.insere(0, 4)
+        >>> lst.eq(lst1)
+        False
+        >>> lst1.insere(0, 4)
+        >>> lst.eq(lst1)
+        True
+        '''
 
+        if (self.tamanho != lst.tamanho):
+            return False
+        
+        for i in range(self.tamanho):
+            if (self.valores[i] != lst.valores[i]):
+                return False
+            
+        return True

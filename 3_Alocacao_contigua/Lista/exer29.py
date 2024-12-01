@@ -3,6 +3,8 @@ from ed import array
 # Capacidade alocada para a lista
 CAPACIDADE = 11
 
+FATOR_CRESCIMENTO = 2
+
 class Lista:
     '''
     Uma sequência de números.
@@ -39,6 +41,7 @@ class Lista:
     >>> lst.remove_item(5)
     >>> lst.str()
     '[10, 8, 8]'
+    
     '''
     
     valores: array[int]
@@ -51,7 +54,7 @@ class Lista:
         '''
         Cria uma nova lista circular vazia com uma capacidade fixa.
         '''
-        self.valores = array(CAPACIDADE, 0)
+        self.valores = array(CAPACIDADE + 1, 0)
         self.tamanho = 0
         self.inicio = 0
     
@@ -165,9 +168,8 @@ class Lista:
         if ( (i < 0) or (i > self.num_itens()) ):
             raise ValueError(f'índice {i} fora do alcance!')
         
-        if ((self.tamanho) == len(self.valores)):
-            raise ValueError('lista cheia')
-        
+        if ((self.tamanho + 1) == len(self.valores)):
+            self.__cresca()
 
         if (i < self.tamanho // 2):
     
@@ -340,10 +342,24 @@ class Lista:
         return resultado + ']'
         
 
-
     def _indice_real(self, i: int) -> int:
         '''
         Converte o índice lógico no índice real no arranjo circular.
         '''
         return (self.inicio + i) % len(self.valores)
 
+
+    def __cresca(self) -> None:
+        '''
+        Duplica a capacidade da lista quando necessário, passando todos os elemetos
+        da antiga lista para a nova lista mantendo a ordem dos elementos.
+        '''
+        
+        capacidade = int((len(self.valores) - 1) * FATOR_CRESCIMENTO)
+        valores = array(capacidade + 1, 0)
+        
+        for i in range(self.tamanho):
+            valores[i] = self.valores[self._indice_real(i)]
+            
+        self.valores = valores
+        self.inicio = 0

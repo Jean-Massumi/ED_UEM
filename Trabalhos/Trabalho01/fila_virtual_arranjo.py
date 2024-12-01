@@ -307,7 +307,7 @@ class FilaVirtual:
     def __cresce(self) -> None:
         '''
         Duplica a capacidade da fila quando necessário, passando todos os elemetos
-        para a nova fila mantendo a ordem dos elementos.
+        da antiga fila para a nova fila mantendo a ordem dos elementos.
         
         >>> f = FilaVirtual()
         >>> for i in range(CAPACIDADE_INICIAL * 2):
@@ -324,8 +324,8 @@ class FilaVirtual:
         10
         '''    
 
-        capacidade = int(len(self.fila_valores) * FATOR_CRESCIMENTO)
-        fila_valores = array(capacidade, PESSOA_VAZIA)
+        capacidade = int((len(self.fila_valores) - 1) * FATOR_CRESCIMENTO)
+        fila_valores = array(capacidade + 1, PESSOA_VAZIA)
         
         for i in range(self.tamanho):
             fila_valores[i] = self.fila_valores[(self.inicio + i) % len(self.fila_valores)]

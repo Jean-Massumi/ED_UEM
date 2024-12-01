@@ -1,7 +1,7 @@
 from ed import array
 
 # Capacidade alocada para a lista
-CAPACIDADE = 7
+CAPACIDADE = 11
 
 class Lista:
     '''
@@ -49,9 +49,9 @@ class Lista:
     
     def __init__(self):
         '''
-        Cria uma nova lista vazia.
+        Cria uma nova lista circular vazia com uma capacidade fixa.
         '''
-        self.valores = array(CAPACIDADE + 1, 0)
+        self.valores = array(CAPACIDADE, 0)
         self.tamanho = 0
         self.inicio = 0
     
@@ -94,7 +94,7 @@ class Lista:
         if ( (i < 0) or (i >= self.num_itens()) ):
             raise ValueError(f'índice {i} fora do alcance!')
     
-        return self.valores[i]
+        return self.valores[self._indice_real(i)]
 
 
     def set(self, i: int, item: int):
@@ -109,82 +109,153 @@ class Lista:
         if ( (i < 0) or (i >= self.num_itens()) ):
             raise ValueError(f'índice {i} fora do alcance!')
         
-        self.valores[i] = item
+        self.valores[self._indice_real(i)] = item
             
 
     def insere(self, i: int, item: int):
         '''
-        Insere *item* na posição *i* da lista. Os itens que estavam inicialmente
+        Insere *item* na posição *i*. Move os elementos para o extremo mais próximo.
+        
+        Se *i* >= tamanho // 2, os itens que estavam inicialmente
         nas posiçõe i, i+1, ..., passam a ficar nas posições i+1, i+2, ...
+
+        Se *i* < tamanho // 2, os itens que estavam inicialmente
+        nas posiçõe i, i+1, ..., passam a ficar nas posições i-1, i-2, ...
 
         Requer que 0 <= i <= self.num_itens().
         
         Exemplo
+        # Insere no início
+        >>> lst = Lista()
+        >>> lst.insere(0, 4)
+        >>> lst.insere(0, 7)
+        >>> lst.insere(0, 2)
+        >>> lst.str()
+        '[2, 7, 4]'
+        
+        # Insere no final.
+        >>> lst = Lista()
+        >>> lst.insere(0, 7)
+        >>> lst.insere(1, 33)
+        >>> lst.insere(2, 80)
+        >>> lst.str()
+        '[7, 33, 80]'
+        >>> lst.insere(4, 12)
+        Traceback (most recent call last):
+        ...
+        ValueError: índice 4 fora do alcance!
+        
+        # Insere aleatoriamente.
         >>> lst = Lista()
         >>> lst.insere(0, 7)
         >>> lst.insere(0, 33)
         >>> lst.insere(0, 80)
-        >>> lst.insere(2, 21)
-        >>> lst.insere(1, 48)
-        >>> lst.str()
-        '[80, 48, 33, 21, 7]'
-        >>> lst.insere(5, 12)
-        Traceback (most recent call last):
-        ...
-        ValueError: índice 5 fora do alcance!
+        >>> lst.insere(0, 21)   # [33, 7, 0, 0, 0, 0, 0, 0, 0, 21, 80] --> [21, 80, 33, 7]
+        >>> lst.insere(1, 48)   # [33, 7, 0, 0, 0, 0, 0, 0, 21, 48, 80] --> [21, 48, 80, 33, 7]
+        >>> lst.insere(3, 99)   # [99, 33, 7, 0, 0, 0, 0, 0, 21, 48, 80] --> [21, 48, 80, 99, 33, 7]
+        >>> lst.insere(6, 63)   # [99, 33, 7, 63, 0, 0, 0, 0, 21, 48, 80] --> [21, 48, 80, 99, 33, 7, 63]
+        >>> lst.insere(3, 75)   # [75, 99, 33, 7, 63, 0, 0, 0, 21, 48, 80] --> [21, 48, 80, 75, 99, 33, 7, 63]
+        >>> lst.insere(0, 34)   # [75, 99, 33, 7, 63, 0, 0, 34, 21, 48, 80] --> [34, 21, 48, 80, 75, 99, 33, 7, 63]
+        >>> lst.insere(3, 101)  # [75, 99, 33, 7, 63, 0, 34, 21, 48, 101, 80] --> [34, 21, 48, 101, 80, 75, 99, 33, 7, 63]
+        >>> lst.insere(6, 83)   # [75, 83, 99, 33, 7, 63, 34, 21, 48, 101, 80] --> [34, 21, 48, 101, 80, 75, 83, 99, 33, 7, 63]
+        >>> lst.str()       
+        '[34, 21, 48, 101, 80, 75, 83, 99, 33, 7, 63]'
         '''
        
         if ( (i < 0) or (i > self.num_itens()) ):
             raise ValueError(f'índice {i} fora do alcance!')
         
-        if ((self.tamanho + 1) == len(self.valores)):
+        if ((self.tamanho) == len(self.valores)):
             raise ValueError('lista cheia')
         
-        metade_tamanho = self.tamanho // 2
-        ACHOU_POSICAO = False
-        
-        if (i <= self.tamanho // 2):
-            
-            while not ACHOU_POSICAO and metade_tamanho >= 0:
-                pre_indice = (self.inicio - (metade_tamanho + 1)) % len(self.valores)
-                indice_atual = (self.inicio - metade_tamanho) % len(self.valores)
+
+        if (i < self.tamanho // 2):
+    
+            for j in range(0, i):
+                pre_indice = self._indice_real(j - 1)
+                indice_atual = self._indice_real(j)
                 
                 self.valores[pre_indice] = self.valores[indice_atual]
                 
-                if (i == metade_tamanho):
-                    ACHOU_POSICAO = True
-                
-                metade_tamanho -= 1
-                
             self.inicio = (self.inicio - 1) % len(self.valores)
-        
+
         else:
-            tamanho_completo = self.tamanho - 1
-            while not ACHOU_POSICAO and tamanho_completo >= metade_tamanho:
-                pos_indice = (tamanho_completo + 1) % len(self.valores)
-                indice_atual = tamanho_completo % len(self.valores)
+
+            for j in range(self.tamanho, i, -1):
+                pos_indice = self._indice_real(j)
+                indice_atual = self._indice_real(j - 1)
                 
                 self.valores[pos_indice] = self.valores[indice_atual]
-                
-                if (i == tamanho_completo):
-                    ACHOU_POSICAO = True
-                
-                tamanho_completo -= 1     
-        
-        self.valores[...] = item
+
+        indice_real = self._indice_real(i)
+
+        self.valores[indice_real] = item
         self.tamanho += 1
         
 
     def remove(self, i: int):
         '''
-        Remove e devolve o item na posição *i* da lista. Os itens que estavam
-        inicialmente nas posições i, i+1, ..., passam a ficar nas posições
-        i-1, i, ...
+        Remove o elemento na posição *i*. Move os elementos restantes para o extremo mais próximo.
+        
+        Se *i* >= tamanho // 2, Os itens que estavam inicialmente nas 
+        posições i, i+1, ..., passam a ficar nas posições i-1, i, ...
+
+         Se *i* < tamanho // 2, Os itens que estavam inicialmente nas 
+        posições i, i+1, ..., passam a ficar nas posições i+1, i+2, ...
+
 
         Requer que 0 <= i < self.num_itens().
-        '''
-        raise NotImplemented
+        
+        Exemplo
+        # Insere no final e Remove no final.
+        >>> lst = Lista()
+        >>> lst.insere(0, 2)
+        >>> lst.insere(1, 5)
+        >>> lst.insere(2, 3)
+        >>> lst.remove(2)
+        >>> lst.str()
+        '[2, 5]'
+        
+        # Insere no final e Remove no inicio.
+        >>> lst = Lista()
+        >>> lst.insere(0, 2)
+        >>> lst.insere(1, 5)
+        >>> lst.insere(2, 3)
+        >>> lst.remove(0)
+        >>> lst.str()
+        '[5, 3]'
 
+        '''
+        
+        if ( (i < 0) or (i > self.num_itens()) ):
+            raise ValueError(f'índice {i} fora do alcance!')
+        
+        if (self.tamanho == 0):
+            raise ValueError('lista vazia')
+        
+        if (i < self.tamanho // 2):
+        
+            for j in range(0, i):
+                pre_indice = self._indice_real(j - 1)
+                indice_atual = self._indice_real(j)
+                
+                self.valores[pre_indice] = self.valores[indice_atual]
+                
+            self.inicio = (self.inicio + 1) % len(self.valores)
+
+        else:
+
+            for j in range(self.tamanho, i, -1):
+                pos_indice = self._indice_real(j)
+                indice_atual = self._indice_real(j - 1)
+                
+                self.valores[pos_indice] = self.valores[indice_atual]
+
+
+        self.tamanho -= 1
+        
+        
+        
     def remove_item(self, item: int):
         '''
         Remove a primeira ocorrência de *item* da lista. Se i é a posição do
@@ -214,7 +285,7 @@ class Lista:
             resultado += str(self.valores[self.inicio])
             
             for i in range(1, self.tamanho, 1):
-                resultado += ', ' + str(self.valores[(self.inicio + i) % self.tamanho])
+                resultado += ', ' + str(self.valores[(self.inicio + i) % len(self.valores)])
                 
         return resultado + ']'
         
@@ -225,3 +296,11 @@ class Lista:
         Converte o índice lógico no índice real no arranjo circular.
         '''
         return (self.inicio + i) % len(self.valores)
+
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from ed import array
 
-# Capacidade inicial alocada para a fila 
+# Capacidade inicial da fila 
 CAPACIDADE_INICIAL: int = 5
 
 # Fator de crescimento quando a fila precisa crescer.
@@ -102,25 +102,28 @@ class FilaVirtual:
     '''
     
     fila_valores: array[Pessoa]
+    # Estrutura de dados que armazena as pessoas na fila.
+    # É implementada como um array circular para melhor eficiência de memória e tempo.
     
     tamanho: int
     # Quantidade de pessoas na fila.
     
     senha: int
-    # Sequencias de senhas em ordem crescente.
+    # Contador incremental que gera as senhas em ordem crescente.    
     
     inicio: int
-    # Inicio da fila, responsavel por desenfileira.
+    # Indice que aponta para o inicio da fila, responsavel por desenfileira.
     
     fim: int
-    # Fim da fila, responsavel por enfileira o próximo elemento.
+    # Indice que aponta para o fim da fila, responsavel por enfileira o próximo elemento.
     
     def __init__(self):
         '''
         Inicializa uma nova fila circular de atendimento.
         '''
+        # Inicialmente, ele é alocado com uma capacidade mínima ajustada (+1 para gestão circular).
         self.fila_valores = array(CAPACIDADE_INICIAL + 1, PESSOA_VAZIA)
-        self.senha = 0          # Senha começa em 0.
+        self.senha = 0          # Começa em 0 e aumenta em 1 a cada nova pessoa enfileirada.
         self.tamanho = 0
         self.inicio = 0
         self.fim = 0
@@ -129,8 +132,8 @@ class FilaVirtual:
         
     def enfileira_geral(self) -> int:
         '''
-        Insere a numeração de uma pessoa do tipo 'GERAL' na fila e devolve a 
-        numeraçao sequencial atribuído.
+        Insere uma pessoa do tipo 'GERAL' na fila e devolva a senha atribuída à 
+        pessoa geral.
                 
         Exemplo
         >>> f = FilaVirtual()
@@ -153,9 +156,9 @@ class FilaVirtual:
     
     def enfileira_prioritaria(self) -> int:
         '''
-        Insere a numeração de uma pessoa do tipo 'PRIORITARIA' na fila, garantindo
-        que ela tenha precedência sobre as demandas gerais e devolve a numeração
-        sequencial atribuído.
+        Insere uma pessoa do tipo 'PRIORITARIA' na fila, garantindo que ela tenha
+        precedência sobre as demandas gerais, respeitando as regras de ultrapassagem e
+        devolva a senha atribuída à pessoa prioritária.
         
         Exemplo
         >>> f = FilaVirtual()
@@ -276,35 +279,35 @@ class FilaVirtual:
     def __acha_posicao_prioritaria(self) -> int:
         """
         Encontra a posição correta para inserir uma pessoa prioritária,
-        deslocando elementos gerais conforme necessário.
+        deslocando elementos gerais conforme necessário e devolve o indice onde o 
+        elemento prioritária deve ser inserido.
         
         Os elementos que estavam inicialmente na posição i, i+1, ..., passam a ficar
         nas posições i+1, i+2, ... 
         """
     
-        posicao_certa: bool = False                     # Acha a posição que deverá ser inserido.
-        indice: int = self.__recua_indice(self.fim)     # Último indice da fila.
+        posicao_encontrada: bool = False              # Encontra a posição que deverá ser inserido.
+        indice: int = self.__recua_indice(self.fim)   # Último indice da fila.
         
-        while ((not posicao_certa) and (indice >= self.inicio)):
+        while ((not posicao_encontrada) and (indice >= self.inicio)):
             pessoa = self.fila_valores[indice]
+            
+            # Verifica se é uma pessoa do tipo *GERAL* que ainda pode ser ultrapassado
             if ((pessoa.tipo == Tipo_pessoa.GERAL) and (pessoa.ultrapassado < 2)):
                 self.fila_valores[indice].ultrapassado += 1
                 self.fila_valores[self.__avanca_indice(indice)] = pessoa
                 indice = self.__recua_indice(indice)
                    
             else:                
-                posicao_certa = True
+                posicao_encontrada = True
             
         return self.__avanca_indice(indice)
  
     
     def __cresce(self) -> None:
         '''
-        Aloca um novo arranjo com a capacidade aumentada por *FATOR_CRESCIMENTO* 
-        se *deve_crescer* for verdadeiro.
-        
-        Aloca um novo arranjo com a mesma capacidade da anterior se *deve_crescer* 
-        for Falso.
+        Duplica a capacidade da fila quando necessário, passando todos os elemetos
+        para a nova fila mantendo a ordem dos elementos.
         
         >>> f = FilaVirtual()
         >>> for i in range(CAPACIDADE_INICIAL * 2):
@@ -325,8 +328,7 @@ class FilaVirtual:
         fila_valores = array(capacidade, PESSOA_VAZIA)
         
         for i in range(self.tamanho):
-            fila_valores[i] = self.fila_valores[self.inicio]
-            self.inicio = self.__avanca_indice(self.inicio)
+            fila_valores[i] = self.fila_valores[(self.inicio + i) % len(self.fila_valores)]
             
         self.fila_valores = fila_valores
         
@@ -336,7 +338,7 @@ class FilaVirtual:
              
     def __avanca_indice(self, indice: int) -> int:
         '''
-        Avança em 1 o indice.
+        Avança e devolve o novo indice do elemento da fila circular.
         '''
         
         return (indice + 1) % len(self.fila_valores)
@@ -344,7 +346,7 @@ class FilaVirtual:
              
     def __recua_indice(self, indice: int) -> int:
         '''
-        Recua em 1 o indice.
+        Recua e devolve o novo indice do elemento da fila circular.
         '''
          
         return (indice - 1) % len(self.fila_valores)

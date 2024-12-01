@@ -169,25 +169,10 @@ class FilaVirtual:
     
         if (self.cheia()):
             self.__cresce()
-    
-        posicao_certa: bool = False                     # Acha a posição que deverá ser inserido.
-        indice: int = self.__recua_indice(self.fim)     # Último indice da fila.
-        
-        while ((not posicao_certa) and (indice >= self.inicio)):
-            pessoa = self.fila_valores[indice]
-            if ((pessoa.tipo == Tipo_pessoa.GERAL) and (pessoa.ultrapassado < 2)):
                     
-                self.fila_valores[indice].ultrapassado += 1
-                self.fila_valores[self.__avanca_indice(indice)] = pessoa
-                    
-                indice = self.__recua_indice(indice)
-                   
-            else:                
-                posicao_certa = True
-            
-            
-        self.senha += 1    
-        self.fila_valores[self.__avanca_indice(indice)] = Pessoa(self.senha, 0, Tipo_pessoa.PRIORITARIA)
+        self.senha += 1   
+        posicao = self.__acha_posicao_prioritaria() 
+        self.fila_valores[posicao] = Pessoa(self.senha, 0, Tipo_pessoa.PRIORITARIA)
  
         self.tamanho += 1
         self.fim = self.__avanca_indice(self.fim)
@@ -287,6 +272,30 @@ class FilaVirtual:
             
         return resultado + ']'
  
+ 
+    def __acha_posicao_prioritaria(self) -> int:
+        """
+        Encontra a posição correta para inserir uma pessoa prioritária,
+        deslocando elementos gerais conforme necessário.
+        
+        Os elementos que estavam inicialmente na posição i, i+1, ..., passam a ficar
+        nas posições i+1, i+2, ... 
+        """
+    
+        posicao_certa: bool = False                     # Acha a posição que deverá ser inserido.
+        indice: int = self.__recua_indice(self.fim)     # Último indice da fila.
+        
+        while ((not posicao_certa) and (indice >= self.inicio)):
+            pessoa = self.fila_valores[indice]
+            if ((pessoa.tipo == Tipo_pessoa.GERAL) and (pessoa.ultrapassado < 2)):
+                self.fila_valores[indice].ultrapassado += 1
+                self.fila_valores[self.__avanca_indice(indice)] = pessoa
+                indice = self.__recua_indice(indice)
+                   
+            else:                
+                posicao_certa = True
+            
+        return self.__avanca_indice(indice)
  
     
     def __cresce(self) -> None:

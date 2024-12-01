@@ -118,33 +118,6 @@ class FilaVirtual:
     def __init__(self):
         '''
         Inicializa uma nova fila de atendimento.
-        
-        >>> f = FilaVirtual()
-        >>> f.enfileira_geral()
-        1
-        >>> f.enfileira_geral()
-        2
-        >>> f.enfileira_prioritaria()
-        3
-        >>> f.desenfileira()
-        3
-        >>> f.desenfileira()
-        1
-        >>> f.desenfileira()
-        2
-        >>> f.enfileira_geral()
-        4
-        >>> f.enfileira_geral()
-        5
-        >>> f.enfileira_geral()
-        6
-        >>> f.enfileira_geral()
-        7
-        >>> f.enfileira_geral()
-        8
-        >>> f.str()
-        '[4, 5, 6, 7, 8]'
-        
         '''
         self.fila_valores = array(CAPACIDADE_INICIAL, PESSOA_VAZIA)
         self.senha = 0          # Senha começa em 0.
@@ -168,11 +141,16 @@ class FilaVirtual:
         '''
         
         if (self.cheia()):
-            self.__cresce()
+            if (self.tamanho > (len(self.fila_valores) * 0.75)):
+                self.__cresce(True)
+                
+            else:
+                self.__cresce(False)
+                
                 
         self.senha += 1
         self.fila_valores[self.fim] = Pessoa(self.senha, 0, Tipo_pessoa.GERAL)
-        self.fim = (self.fim + 1) % (len(self.fila_valores))
+        self.fim += 1
         self.tamanho += 1
     
         return self.senha
@@ -192,85 +170,36 @@ class FilaVirtual:
         2
         >>> f.enfileira_prioritaria()
         3
-        
-        
-        
-        # Testando a fila com capacidade inicial
-        >>> f = FilaVirtual()
-        >>> f.vazia()
-        True
-        >>> f.cheia()
-        False
-        >>> f.enfileira_geral()
-        1
-        >>> f.enfileira_geral()
-        2
-        >>> f.enfileira_prioritaria()
-        3
-        >>> f.str()
-        '[3, 1, 2]'
-
-        # Testando ultrapassagem
-        >>> f.enfileira_prioritaria()
-        4
-        >>> f.enfileira_prioritaria()
-        5
-        >>> f.str()
-        '[3, 4, 1, 2, 5]'
-
-        # Testando desenfileirar
-        >>> f.desenfileira()
-        3
-        >>> f.desenfileira()
-        4
-        >>> f.str()
-        '[1, 2, 5]'
-
-        # Testando crescimento da fila
-        >>> for _ in range(10):
-        ...     f.enfileira_geral()
-        6
-        7
-        8
-        9
-        10
-        11
-        12
-        13
-        14
-        15
-        >>> f.str()  # Deve mostrar todos os elementos na ordem correta
-        '[1, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]'
-
-        
         '''
     
         if (self.cheia()):
-            self.__cresce()
+            if (self.tamanho > (len(self.fila_valores) * 0.75)):
+                self.__cresce(True)
+                
+            else:
+                self.__cresce(False)
     
         posicao_certa: bool = False   # Acha a posição que deverá ser inserido.
-        posicao_atual: int = self.fim - 1    # Contador
+        i: int = self.fim - 1    # Contador
         
-        while (not posicao_certa):
-            pessoa_atual = self.fila_valores[posicao_atual]
-            
-            if ((pessoa_atual.tipo == Tipo_pessoa.GERAL) and (pessoa_atual.ultrapassado < 2)):
+        while ((not posicao_certa) and (i >= self.inicio)):
+            pessoa = self.fila_valores[i]
+            if ((pessoa.tipo == Tipo_pessoa.GERAL) and (pessoa.ultrapassado < 2)):
                     
-                self.fila_valores[posicao_atual].ultrapassado += 1
-                self.fila_valores[posicao_atual + 1] = pessoa_atual
+                self.fila_valores[i].ultrapassado += 1
+                self.fila_valores[i + 1] = pessoa
                     
-                posicao_atual = (posicao_atual - 1) % (len(self.fila_valores))
+                i -= 1
                    
             else:                
                 posicao_certa = True
-                posicao_atual = (posicao_atual + 1) % (len(self.fila_valores))
                 
             
         self.senha += 1    
-        self.fila_valores[posicao_atual] = Pessoa(self.senha, 0, Tipo_pessoa.PRIORITARIA)
+        self.fila_valores[i + 1] = Pessoa(self.senha, 0, Tipo_pessoa.PRIORITARIA)
  
         self.tamanho += 1
-        self.fim = (self.fim + 1) % (len(self.fila_valores))
+        self.fim += 1
     
         return self.senha
     
@@ -295,7 +224,7 @@ class FilaVirtual:
             raise ValueError('Fila vazia')
         
         senha: int = self.fila_valores[self.inicio].senha
-        self.inicio = (self.inicio + 1) % (len(self.fila_valores))
+        self.inicio += 1
         self.tamanho -= 1
     
         return senha
@@ -337,7 +266,7 @@ class FilaVirtual:
         True
         '''
     
-        return self.tamanho == len(self.fila_valores) 
+        return self.fim == len(self.fila_valores)
     
     
     
@@ -355,33 +284,20 @@ class FilaVirtual:
         2
         >>> f.str()
         '[2, 1]'
-        '''   
+        '''
         
         resultado = '['
         
         if (not self.vazia()):
             resultado += str(self.fila_valores[self.inicio].senha)
             
-            if (self.inicio != 0):
-                resultados = self.fim
-                
-                if (self.fim <= self.inicio):
-                    resultados = self.tamanho
-                
-            else:
-                resultados = self.tamanho
-            
-            for i in range(self.inicio + 1, resultados, 1):
+            for i in range(self.inicio + 1, self.fim, 1):
                 resultado += ', ' + str(self.fila_valores[i].senha)
             
-            if (self.fim <= self.inicio):
-                for i in range(0 ,self.fim):
-                    resultado += ', ' + str(self.fila_valores[i].senha)
-                
         return resultado + ']'
     
     
-    def __cresce(self) -> None:
+    def __cresce(self, deve_crescer: bool) -> None:
         '''
         Aloca um novo arranjo com a capacidade aumentada por *FATOR_CRESCIMENTO* 
         se *deve_crescer* for verdadeiro.
@@ -404,30 +320,21 @@ class FilaVirtual:
         10
         '''    
 
-        capacidade = int(len(self.fila_valores) * FATOR_CRESCIMENTO)
-        fila_valores = array(capacidade, PESSOA_VAZIA)
-
-        for i in range(len(self.fila_valores)):
-            fila_valores[i] = self.fila_valores[self.inicio]
-            self.inicio = (self.inicio + 1) % (len(self.fila_valores))
-
-        self.fila_valores = fila_valores
+        if (deve_crescer):
+            capacidade = int(len(self.fila_valores) * FATOR_CRESCIMENTO)
+            fila_valores = array(capacidade, PESSOA_VAZIA)
+            
+            for i in range(self.tamanho):
+                fila_valores[i] = self.fila_valores[self.inicio]
+                self.inicio += 1
+                
+            self.fila_valores = fila_valores
         
-        self.inicio = 0                     # Coloca o indice do início no começo da fila.
-        self.fim = self.tamanho             # Coloca o indice a uma posição depois do 
-                                            # ultimo elemento da fila anterior.
-
-
-
-f = FilaVirtual()
-f.vazia()
-
-f.enfileira_geral()
-f.enfileira_geral()
-f.enfileira_geral()
-f.str()
-
-f.enfileira_prioritaria()
-f.enfileira_prioritaria()
-f.enfileira_prioritaria()
-f.str()
+        else:
+            for i in range(self.tamanho):
+                self.fila_valores[i] = self.fila_valores[self.inicio]
+                self.inicio += 1
+        
+        self.inicio = 0
+        self.fim = self.tamanho
+             

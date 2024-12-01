@@ -6,6 +6,8 @@ CAPACIDADE_INICIAL = 4
 # Fator de crescimento quanto a lista precisa crescer
 FATOR_CRESCIMENTO = 2.0
 
+FATOR_DECRESCIMENTO = 0.5
+
 class Lista:
     '''
     Uma sequência de números.
@@ -166,13 +168,15 @@ class Lista:
         ValueError: índice 2 fora da faixa
         '''
         
-        if (self.num_itens < (len(self.valores) * 0.25)):
-            __diminuit()
-        
-        
-        
         if i < 0 or self.num_itens() <= i:
             raise ValueError(f'índice {i} fora da faixa')
+        
+        
+        if ((self.num_itens() < ((len(self.valores) * 0.25))) and (len(self.valores) > 10)):
+            self.__diminui()
+        
+        
+        
         for j in range(i + 1, self.tamanho):
             self.valores[j - 1] = self.valores[j]
         self.tamanho -= 1
@@ -223,14 +227,22 @@ class Lista:
         return s + ']'
 
     def __cresce(self):
-        # Aloca um novo arranjo para valores com a capacidade aumenta por *FATOR_CRESCIMENTO*
-        capacidade = int(len(self.valores) * FATOR_CRESCIMENTO)
+        self.__redimenciona(FATOR_CRESCIMENTO)
+
+
+    def __diminui(self):
+        self.__redimenciona(FATOR_DECRESCIMENTO)
+
+
+    def __redimenciona(self, fator: float):
+        # Aloca um novo arranjo para valores
+        capacidade = int(len(self.valores) * fator)
         valores = array(capacidade, 0)
+
+        # A nova capacidade não pode ser menor que o número de intes
+        assert self.num_itens() < capacidade
+
+        # Cópia os valores para o novo arranjo
         for i in range(self.num_itens()):
             valores[i] = self.valores[i]
         self.valores = valores
-
-
-
-    def __diminui
-

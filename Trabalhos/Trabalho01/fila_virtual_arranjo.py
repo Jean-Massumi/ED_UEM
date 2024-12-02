@@ -8,14 +8,12 @@ CAPACIDADE_INICIAL: int = 5
 # Fator de crescimento quando a fila precisa crescer.
 FATOR_CRESCIMENTO: int = 2
 
-
 class Tipo_pessoa(Enum):
     '''
     Representa o tipo de atendimento de uma pessoa.
     '''
     GERAL = auto()
     PRIORITARIA = auto()
-    
 
 @dataclass
 class Pessoa:
@@ -40,7 +38,6 @@ class FilaVirtual:
     Regras:
     - As demandas prioritárias ficam na frente das gerais
     - Cada demanda geral só pode ser “passada” por até duas prioritárias
-    
     
     Exemplo
     >>> f = FilaVirtual()
@@ -127,8 +124,7 @@ class FilaVirtual:
         self.tamanho = 0
         self.inicio = 0
         self.fim = 0
-        
-                
+                    
         
     def enfileira_geral(self) -> int:
         '''
@@ -141,6 +137,8 @@ class FilaVirtual:
         1
         >>> f.enfileira_geral()
         2
+        >>> f.str()
+        '[1, 2]'
         '''
         
         if (self.cheia()):
@@ -168,6 +166,8 @@ class FilaVirtual:
         2
         >>> f.enfileira_prioritaria()
         3
+        >>> f.str()
+        '[1, 2, 3]'
         '''
     
         if (self.cheia()):
@@ -195,8 +195,16 @@ class FilaVirtual:
         1
         >>> f.enfileira_prioritaria()
         2
+        >>> f.str()
+        '[2, 1]'
         >>> f.desenfileira()
         2
+        >>> f.desenfileira()
+        1
+        >>> f.desenfileira()
+        Traceback (most recent call last):
+        ...
+        ValueError: Fila vazia
         '''
         
         if (self.vazia()):
@@ -246,7 +254,6 @@ class FilaVirtual:
         '''
     
         return (self.fim + 1) == len(self.fila_valores)
-    
     
     
     def str(self) -> str:

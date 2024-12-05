@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -14,11 +15,25 @@ class Pessoa:
     '''
     Representa uma pessoa na fila de atendimento.
     '''
-    numero: int
-    ultrapassado: int = 0
+    senha: int
+    ultrapassado: int
     tipo: Tipo_pessoa
+    
+    
+@dataclass
+class No:
+    ante: No
+    item: Pessoa
+    prox: No
+    
+    def __init__(self, item: Pessoa) -> None:
+        self.ante = None    # type: ignore
+        self.item = item
+        self.prox = None    # type: ignore
 
 
+# SENTINELA que representa uma posição vazia na fila
+SENTINELA_VAZIA = Pessoa(-1, -1, None)  # Instância de sentinela
 class FilaVirtual:
     '''
     Representa uma fila de atendimento. 
@@ -86,17 +101,25 @@ class FilaVirtual:
     >>> f.vazia()
     True
     >>> f.str()
-    '[]'
+    '[]'  
     '''
+
+    sentinela: No
+    
+    senha: int
+    # Contador incremental que gera as senhas em ordem crescente.    
 
     
     def __init__(self):
         '''
-        Inicializa uma nova fila de atendimento.
+        Inicializa uma nova fila encadeada de atendimento.
         '''
         
-        return NotImplementedError
-        
+        self.sentinela = No(SENTINELA_VAZIA)
+        self.sentinela.ante = self.sentinela
+        self.sentinela.prox = self.sentinela
+        self.senha = 0 
+                
         
     def enfileira_geral(self) -> int:
         '''
@@ -109,10 +132,17 @@ class FilaVirtual:
         1
         >>> f.enfileira_geral()
         2
+        >>> f.str()
+        '[1, 2]'
         '''
-    
-        return NotImplementedError
-    
+        
+        self.senha += 1
+        nova_pessoa_geral = No(Pessoa(self.senha, 0, Tipo_pessoa.GERAL))
+        
+        self.__auxilia_enfileira(self.sentinela.ante, nova_pessoa_geral)
+        
+        return self.senha
+        
     
     def enfileira_prioritaria(self) -> int:
         '''
@@ -130,10 +160,18 @@ class FilaVirtual:
         3
         '''
         
-        while (q.ante.tipo != Tipo_pessoa.PRIORITARIA and q.ante.ultrapassado < 2):
-            ...
+        sentinela_aux = self.sentinela.ante
+        
+        while ((sentinela_aux.item.tipo == Tipo_pessoa.GERAL) and (sentinela_aux.item.ultrapassado < 2)):
+            sentinela_aux.item.ultrapassado += 1
+            sentinela_aux = sentinela_aux.ante
+            
+        self.senha += 1
+        nova_pessoa_prioritaria = No(Pessoa(self.senha, 0, Tipo_pessoa.PRIORITARIA))
     
-        return NotImplementedError
+        self.__auxilia_enfileira(sentinela_aux, nova_pessoa_prioritaria)
+    
+        return self.senha
     
     
     def desenfileira(self) -> int:
@@ -151,8 +189,17 @@ class FilaVirtual:
         >>> f.desenfileira()
         2
         '''
+        
+        if (self.vazia()):
+            raise ValueError('fila vazia.')
+        
+        senha = self.sentinela.prox.item.senha
+
+        sentinela_aux = self.sentinela.prox
+        sentinela_aux.prox.ante = sentinela_aux.ante
+        sentinela_aux.ante.prox = sentinela_aux.prox
     
-        return NotImplementedError
+        return senha
     
     
     def vazia(self) -> bool:
@@ -169,7 +216,7 @@ class FilaVirtual:
         False
         '''
         
-        return NotImplementedError
+        return self.sentinela.prox is self.sentinela
         
     
     
@@ -186,8 +233,37 @@ class FilaVirtual:
         >>> f.enfileira_prioritaria()
         2
         >>> f.str()
-        '[1, 2]'
+        '[2, 1]'
         '''
         
-        return NotImplementedError
+        sentinela_aux = self.sentinela
+        resultado = '['
+        
+        if (sentinela_aux.prox is not self.sentinela):
+            resultado += str(sentinela_aux.prox.item.senha)
+
+            sentinela_aux = sentinela_aux.prox.prox
+            while (sentinela_aux is not self.sentinela):
+                resultado += ", " + str(sentinela_aux.item.senha)
+                sentinela_aux = sentinela_aux.prox
+        
+        return resultado + ']'
     
+    
+    def __auxilia_enfileira(self, sentinela_aux: No, Novo: No) -> None:
+        '''
+        
+        
+        '''
+        Novo.ante = sentinela_aux
+        Novo.prox = sentinela_aux.prox
+        sentinela_aux.prox.ante = Novo
+        sentinela_aux.prox = Novo
+    
+f = FilaVirtual()
+f.enfileira_geral()  # GER
+f.enfileira_prioritaria()  # PRIORITÁR
+f.enfileira_geral()  # GER
+f.enfileira_prioritaria()  # PRIORITÁR
+f.enfileira_prioritaria()  # PRIORITÁR
+f.str()   

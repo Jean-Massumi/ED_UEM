@@ -8,13 +8,6 @@ CAPACIDADE_INICIAL: int = 5
 # Fator de crescimento quando a fila precisa crescer.
 FATOR_CRESCIMENTO: int = 2
 
-class Tipo_pessoa(Enum):
-    '''
-    Representa o tipo de atendimento de uma pessoa.
-    '''
-    GERAL = auto()
-    PRIORITARIA = auto()
-
 @dataclass
 class Pessoa:
     '''
@@ -22,18 +15,17 @@ class Pessoa:
     '''
     senha: int
     ultrapassado: int
-    tipo: Tipo_pessoa | None
 
 
 # Pessoa que representa uma posição vazia na fila
-PESSOA_VAZIA = Pessoa(-1, -1, None)  # Instância de Pessoa
+PESSOA_VAZIA = Pessoa(-1, -2)  # Instância de Pessoa
 
 class FilaVirtual:
     '''
     Representa uma fila de atendimento. 
 
-    A fila organiza as pessoas em ordem de chegada, garantindo prioridade para 
-    demandas prioritárias. As regras de ultrapassagem de demandas gerais são respeitadas.
+    A fila organiza as pessoas em ordem de chegada, garantindo que as pessoas prioritárias
+    tenham preferência sobre as gerais. As regras de ultrapassagem de demandas gerais são respeitadas.
     
     Regras:
     - As demandas prioritárias ficam na frente das gerais
@@ -51,11 +43,11 @@ class FilaVirtual:
     3
     >>> f.str()
     '[1, 2, 3]'
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     4
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     5
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     6
     >>> f.str()
     '[4, 5, 1, 2, 3, 6]'
@@ -63,13 +55,13 @@ class FilaVirtual:
     7
     >>> f.enfileira_geral()
     8
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     9
     >>> f.str()
     '[4, 5, 1, 2, 3, 6, 9, 7, 8]'
     >>> f.enfileira_geral()
     10
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     11
     >>> f.str()
     '[4, 5, 1, 2, 3, 6, 9, 11, 7, 8, 10]'
@@ -145,26 +137,26 @@ class FilaVirtual:
             self.__cresce()
                      
         self.senha += 1
-        self.fila_valores[self.fim] = Pessoa(self.senha, 0, Tipo_pessoa.GERAL)
+        self.fila_valores[self.fim] = Pessoa(self.senha, 0)
         self.fim = self.__avanca_indice(self.fim)
         self.tamanho += 1
     
         return self.senha
     
     
-    def enfileira_prioritaria(self) -> int:
+    def enfileira_prioridade(self) -> int:
         '''
-        Insere uma pessoa do tipo 'PRIORITARIA' na fila, garantindo que ela tenha
+        Insere uma pessoa do tipo 'PRIORIDADE' na fila, garantindo que ela tenha
         precedência sobre as demandas gerais, respeitando as regras de ultrapassagem e
         devolva a senha atribuída à pessoa prioritária.
         
         Exemplo
         >>> f = FilaVirtual()
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         1
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         2
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         3
         >>> f.str()
         '[1, 2, 3]'
@@ -174,8 +166,8 @@ class FilaVirtual:
             self.__cresce()
                     
         self.senha += 1   
-        posicao = self.__acha_posicao_prioritaria() 
-        self.fila_valores[posicao] = Pessoa(self.senha, 0, Tipo_pessoa.PRIORITARIA)
+        posicao = self.__acha_posicao_prioridade() 
+        self.fila_valores[posicao] = Pessoa(self.senha, -1)
  
         self.tamanho += 1
         self.fim = self.__avanca_indice(self.fim)
@@ -193,7 +185,7 @@ class FilaVirtual:
         True
         >>> f.enfileira_geral()
         1
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         2
         >>> f.str()
         '[2, 1]'
@@ -204,11 +196,11 @@ class FilaVirtual:
         >>> f.desenfileira()
         Traceback (most recent call last):
         ...
-        ValueError: Fila vazia
+        ValueError: fila vazia.
         '''
         
         if (self.vazia()):
-            raise ValueError('Fila vazia')
+            raise ValueError('fila vazia.')
         
         senha: int = self.fila_valores[self.inicio].senha
         self.inicio = self.__avanca_indice(self.inicio)
@@ -225,7 +217,7 @@ class FilaVirtual:
         >>> f = FilaVirtual()
         >>> f.vazia()
         True
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         1
         >>> f.vazia()
         False
@@ -266,7 +258,7 @@ class FilaVirtual:
         '[]'
         >>> f.enfileira_geral()
         1
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         2
         >>> f.str()
         '[2, 1]'
@@ -283,7 +275,7 @@ class FilaVirtual:
         return resultado + ']'
  
  
-    def __acha_posicao_prioritaria(self) -> int:
+    def __acha_posicao_prioridade(self) -> int:
         """
         Encontra a posição correta para inserir uma pessoa prioritária,
         deslocando elementos gerais conforme necessário e devolve o indice onde o 
@@ -300,7 +292,7 @@ class FilaVirtual:
             pessoa = self.fila_valores[indice]
             
             # Verifica se é uma pessoa do tipo *GERAL* que ainda pode ser ultrapassado
-            if ((pessoa.tipo == Tipo_pessoa.GERAL) and (pessoa.ultrapassado < 2)):
+            if ((pessoa.ultrapassado >= 0) and (pessoa.ultrapassado < 2)):
                 self.fila_valores[indice].ultrapassado += 1
                 self.fila_valores[self.__avanca_indice(indice)] = pessoa
                 indice = self.__recua_indice(indice)

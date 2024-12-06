@@ -1,14 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 
-class Tipo_pessoa(Enum):
-    '''
-    Representa o tipo de atendimento de uma pessoa.
-    '''
-    GERAL = auto()
-    PRIORITARIA = auto()
-
-
 @dataclass
 class Pessoa:
     '''
@@ -16,15 +8,13 @@ class Pessoa:
     '''
     numero: int
     ultrapassado: int = 0
-    tipo: Tipo_pessoa
-
 
 class FilaVirtual:
     '''
     Representa uma fila de atendimento. 
 
-    A fila organiza as pessoas em ordem de chegada, garantindo prioridade para 
-    demandas prioritárias. As regras de ultrapassagem de demandas gerais são respeitadas.
+    A fila organiza as pessoas em ordem de chegada, garantindo que as pessoas prioritárias
+    tenham preferência sobre as gerais. As regras de ultrapassagem de demandas gerais são respeitadas.
     
     Regras:
     - As demandas prioritárias ficam na frente das gerais
@@ -42,11 +32,11 @@ class FilaVirtual:
     3
     >>> f.str()
     '[1, 2, 3]'
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     4
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     5
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     6
     >>> f.str()
     '[4, 5, 1, 2, 3, 6]'
@@ -54,13 +44,13 @@ class FilaVirtual:
     7
     >>> f.enfileira_geral()
     8
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     9
     >>> f.str()
     '[4, 5, 1, 2, 3, 6, 9, 7, 8]'
     >>> f.enfileira_geral()
     10
-    >>> f.enfileira_prioritaria()
+    >>> f.enfileira_prioridade()
     11
     >>> f.str()
     '[4, 5, 1, 2, 3, 6, 9, 11, 7, 8, 10]'
@@ -114,19 +104,19 @@ class FilaVirtual:
         return NotImplementedError
     
     
-    def enfileira_prioritaria(self) -> int:
+    def enfileira_prioridade(self) -> int:
         '''
-        Insere a numeração de uma pessoa do tipo 'PRIORITARIA' na fila, garantindo
+        Insere a numeração de uma pessoa prioritária na fila, garantindo
         que ela tenha precedência sobre as demandas gerais e devolve a numeração
         sequencial atribuído.
         
         Exemplo
         >>> f = FilaVirtual()
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         1
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         2
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         3
         '''
     
@@ -143,7 +133,7 @@ class FilaVirtual:
         True
         >>> f.enfileira_geral()
         1
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         2
         >>> f.desenfileira()
         2
@@ -160,7 +150,7 @@ class FilaVirtual:
         >>> f = FilaVirtual()
         >>> f.vazia()
         True
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         1
         >>> f.vazia()
         False
@@ -171,7 +161,7 @@ class FilaVirtual:
     
     def cheia(self) -> bool:
         '''
-        Devolve True se a fila está cheia. False caso contrario.
+        Devolve True se a fila está cheia. False caso contrário.
         
         Exemplo
         >>> f = FilaVirtual()
@@ -199,7 +189,7 @@ class FilaVirtual:
         '[]'
         >>> f.enfileira_geral()
         1
-        >>> f.enfileira_prioritaria()
+        >>> f.enfileira_prioridade()
         2
         >>> f.str()
         '[1, 2]'

@@ -10,6 +10,6 @@
 -
 -
 
-"Os exercícios foram retirados das listas desenvolvidas pelo professor Marcos Aurélio. 
+"Os exercícios foram retirados do site do professor Marcos Aurélio. 
 Todo o crédito pelo material é atribuído ao autor."
 Site : https://malbarbo.pro.br/ensino/2024/6884/

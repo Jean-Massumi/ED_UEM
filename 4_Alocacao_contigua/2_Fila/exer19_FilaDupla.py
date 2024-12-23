@@ -79,31 +79,6 @@ class FilaDupla:
         self.tamanho += 1
         
         
-    def queue_end(self, item: str) -> None:
-        '''
-        Insere um elemento no fim da fila.
-        
-        Exemplos
-        >>> f = FilaDupla(2)
-        >>> f.queue_end('1')
-        >>> f.queue_end('2')
-        >>> f.queue_end('oi')
-        Traceback (most recent call last):
-        ...
-        ValueError: Fila cheia
-        >>> f.dequeue_start()
-        '1'
-        >>> f.dequeue_end()
-        '2'
-        '''
-        
-        if (self.cheia()):
-            raise ValueError('Fila cheia')
-        
-        self.valores[self.fim] = item
-        self.fim = (self.fim + 1) % self.Capacidade 
-        self.tamanho += 1
-        
         
     def dequeue_start(self) -> str:
         '''
@@ -132,6 +107,31 @@ class FilaDupla:
         
         return elemento
         
+        
+    def queue_end(self, item: str) -> None:
+        '''
+        Insere um elemento no fim da fila.
+        
+        Exemplos
+        >>> f = FilaDupla(2)
+        >>> f.queue_end('1')
+        >>> f.queue_end('2')
+        >>> f.queue_end('oi')
+        Traceback (most recent call last):
+        ...
+        ValueError: Fila cheia
+        >>> f.dequeue_start()
+        '1'
+        >>> f.dequeue_end()
+        '2'
+        '''
+        
+        if (self.cheia()):
+            raise ValueError('Fila cheia')
+        
+        self.valores[self.fim] = item
+        self.fim = (self.fim + 1) % self.Capacidade 
+        self.tamanho += 1
         
         
     def dequeue_end(self) -> str:

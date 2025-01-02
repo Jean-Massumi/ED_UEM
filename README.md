@@ -6,9 +6,11 @@
 - Noções de complexidade de algoritmos
 - Estruturas de dados lineares com alocação contigua
 - Estruturas de dados lineares com alocação encadeada
+- Recursividade
+- Busca
+- Árvores binárias
 - 
--
--
+- 
 
 "Os exercícios foram retirados do site do professor Marcos Aurélio. 
 Todo o crédito pelo material é atribuído ao autor."

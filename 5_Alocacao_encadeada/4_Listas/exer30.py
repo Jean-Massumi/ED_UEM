@@ -6,9 +6,9 @@ class No:
     '''
     Um nó no encademaneto.
     '''
-    prox: No
-    item: int
     ante: No
+    item: int
+    prox: No
 
     def __init__(self, item: int):
         # Após a criação de um nó temos a responsabilidade
@@ -20,9 +20,9 @@ class No:
         
 def insere(atual: No, novo: No) -> None:
     novo.prox = atual.prox
+    novo.ante = atual
     atual.prox.ante = novo
     atual.prox = novo
-    novo.ante = atual
     
 def remove(atual: No) -> int:
     atual.ante.prox = atual.prox
@@ -71,7 +71,7 @@ class Lista:
     
     sentinela: No
     tamanho: int
-    direcao: bool
+    invertida: bool
 
     def __init__(self):
         '''
@@ -82,7 +82,7 @@ class Lista:
         self.sentinela.ante = self.sentinela
         self.sentinela.prox = self.sentinela
         self.tamanho = 0
-        self.direcao = True # True: navega normalmente (prox), False: navega invertido (ante)
+        self.invertida = False # False: navega normalmente (prox), True: navega invertido (ante)
 
 
     def num_itens(self) -> int:
@@ -120,25 +120,13 @@ class Lista:
         '''
 
         if (i < 0) or (i >= self.tamanho):
-            raise ValueError('índice inválido.')    
-    
-        sentinela_aux = self.sentinela
+            raise ValueError('índice inválido.')   
         
-        if i <= (self.tamanho // 2):
-            posicao = -1
-            
-            while posicao != i:
-                sentinela_aux = sentinela_aux.prox
-                posicao += 1
-                
-        else:
-            posicao = self.tamanho
-            
-            while posicao != i:
-                sentinela_aux = sentinela_aux.ante
-                posicao -= 1
-            
-        return sentinela_aux.item
+        atual = self._prox(self.sentinela)
+        for j in range(i):
+            atual = self._prox(atual)
+
+        return atual.item
     
 
     def set(self, i: int, item: int):
@@ -167,23 +155,12 @@ class Lista:
         if i < 0 or i >= self.num_itens():
             raise ValueError('índice fora do alcance.')    
         
-        sentinela_aux = self.sentinela
+        atual = self._prox(self.sentinela)
+        for j in range(i):
+            atual = self._prox(atual)
+  
+        atual.item = item
         
-        if i <= (self.tamanho // 2):
-            posicao = -1
-            
-            while posicao != i:
-                sentinela_aux = sentinela_aux.prox
-                posicao += 1
-                
-        else:
-            posicao = self.tamanho
-            
-            while posicao != i:
-                sentinela_aux = sentinela_aux.ante
-                posicao -= 1        
-                
-        sentinela_aux.item = item    
 
     def insere(self, i: int, item: int):
         '''
@@ -209,27 +186,13 @@ class Lista:
         if i < 0 or i > self.num_itens():
             raise ValueError('índice fora do alcance.')
 
-        novo_no = No(item)
-        sentinela_aux = self.sentinela
-
-        if i <= (self.tamanho // 2):
-            indice_virtual = 0
+        novo = No(item)
+        atual = self.sentinela
+        for j in range((i + 1) if self.invertida else i):
+            atual = self._prox(atual)     
             
-            while indice_virtual != i:
-                sentinela_aux = sentinela_aux.prox
-                indice_virtual += 1
-                
-            insere(sentinela_aux, novo_no)
-                
-        else:
-            indice_virtual = self.tamanho
-            
-            while indice_virtual != i:
-                sentinela_aux = sentinela_aux.ante
-                indice_virtual -= 1
-                
-            insere(sentinela_aux.ante, novo_no)
-
+        insere(atual, novo)
+        
         self.tamanho += 1
 
 
@@ -271,26 +234,11 @@ class Lista:
         if i < 0 or i > self.num_itens():
             raise ValueError('índice fora do alcance.')
 
-        sentinela_aux = self.sentinela
-
-        if i <= (self.tamanho // 2):
-            indice_virtual = 0
+        atual = self._prox(self.sentinela)
+        for j in range(i):
+            atual = self._prox(atual)
             
-            while indice_virtual != i:
-                sentinela_aux = sentinela_aux.prox
-                indice_virtual += 1
-                
-            remove(sentinela_aux.prox)
-            
-        else:
-            indice_virtual = self.tamanho
-            
-            while indice_virtual != i:
-                sentinela_aux = sentinela_aux.ante
-                indice_virtual -= 1
-                
-            remove(sentinela_aux.ante)
-
+        remove(atual)
         self.tamanho -= 1
         
         
@@ -332,18 +280,16 @@ class Lista:
         ...
         ValueError: o item não está na lista.
         '''
-
-        posicao = 0
-        sentinela_aux = self.sentinela.prox
+        atual = self._prox(self.sentinela)
         
-        while (sentinela_aux is not self.sentinela) and (sentinela_aux.item != item):
-            sentinela_aux = sentinela_aux.prox
-            posicao += 1
+        for i in range(self.tamanho):
+            if atual.item == item:
+                return i
             
-            if sentinela_aux is self.sentinela:
-                raise ValueError('o item não está na lista.')
-            
-        return posicao
+            atual = self._prox(atual)
+
+        raise ValueError('o item não está na lista.')
+
 
     def str(self) -> str:
         '''
@@ -354,19 +300,20 @@ class Lista:
         >>> lst.str()
         '[]'
         '''
-        representacao = '['
-        
-        if not self.vazia():
-            sentinela_aux = self.sentinela.prox
-            
-            representacao += str(sentinela_aux.item)
-            
-            for i in range(1, self.tamanho):
-                sentinela_aux = sentinela_aux.prox
-                representacao += ', ' + str(sentinela_aux.item)
-                
-        return representacao + ']'
+
+        if self.vazia():
+            return '[]'
       
+        resp = '['
+        atual = self._prox(self.sentinela)
+        for i in range(self.tamanho - 1):
+            resp += str(atual.item) + ', '
+            atual = self._prox(atual)
+            
+        resp += str(atual.item) + ']'
+            
+        return resp
+        
         
     def vazia(self) -> bool:
         '''
@@ -376,28 +323,65 @@ class Lista:
         return self.sentinela.prox is self.sentinela
     
     
-    def inverte_ordem(self) -> None:
+    def inverte(self) -> None:
         '''
         Inverte a direcao da ordem dos elementos da lista.
+        
+        Exemplos
+        >>> lst = Lista()
+        >>> lst.insere(0, 10)
+        >>> lst.insere(1, 20)
+        >>> lst.insere(2, 30)
+        >>> lst.str()
+        '[10, 20, 30]'
+        
+        # Testando a inversão básica
+        >>> lst.inverte()
+        >>> lst.str()
+        '[30, 20, 10]'
+        
+        # Inserção com a lista invertida
+        >>> lst.insere(1, 25)
+        >>> lst.str()
+        '[30, 25, 20, 10]'
+        
+        # Remoção com a lista invertida
+        >>> lst.remove(2)
+        >>> lst.str()
+        '[30, 25, 10]'
+        
+        # Verificar com `get` na lista invertida
+        >>> lst.get(0)
+        30
+        >>> lst.get(2)
+        10
+
+        # Reinversão para voltar à ordem original
+        >>> lst.inverte()
+        >>> lst.str()
+        '[10, 25, 30]'
+        
+        # Testando outros métodos na ordem original
+        >>> lst.set(1, 27)
+        >>> lst.str()
+        '[10, 27, 30]'
+        >>> lst.remove_item(27)
+        >>> lst.str()
+        '[10, 30]'
+        >>> lst.indice(30)
+        1
+
+        # Inverter novamente em uma lista reduzida
+        >>> lst.inverte()
+        >>> lst.str()
+        '[30, 10]'
         '''
-        self.direcao = not self.direcao
+        self.invertida = not self.invertida
         
     
-    def __navega_para(self, i: int) -> No:
-        '''
-        Navega até o nó na posição i.
-        '''
+    def _prox(self, no: No) -> No:
+        '''Retorna o próximo nó considerando o estado de inversão'''
         
-        if i < (self.tamanho // 2):
-            atual = self.sentinela.prox
-            
-            for _ in range(i):
-                atual = atual.prox
-                
-        else:
-            atual = self.sentinela
-            
-            for _ in range(self.tamanho - i):
-                atual = atual.ante
-                
-        return atual
+        return no.ante if self.invertida else no.prox
+    
+    

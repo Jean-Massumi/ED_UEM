@@ -6,23 +6,23 @@ class No:
     '''
     Um nó no encademaneto.
     '''
-    prox: No
-    item: int
     ante: No
+    item: int
+    prox: No
 
     def __init__(self, item: int):
         # Após a criação de um nó temos a responsabilidade
         # de alterar ante e prox para valores válidos!
-        self.prox = None  # type: ignore
-        self.item = item
         self.ante = None  # type: ignore
+        self.item = item
+        self.prox = None  # type: ignore
         
         
 def insere(atual: No, novo: No) -> None:
     novo.prox = atual.prox
+    novo.ante = atual
     atual.prox.ante = novo
     atual.prox = novo
-    novo.ante = atual
     
 def remove(atual: No) -> int:
     atual.ante.prox = atual.prox
@@ -67,7 +67,6 @@ class Lista:
     >>> lst.remove_item(5)
     >>> lst.str()
     '[10, 8, 8]'
-
     '''
     
     sentinela: No
@@ -120,11 +119,25 @@ class Lista:
 
         if (i < 0) or (i >= self.tamanho):
             raise ValueError('índice inválido.')    
+    
+        
+        if i <= (self.tamanho // 2):
+            posicao = 0
+            sentinela_aux = self.sentinela.prox
+        
+            while posicao != i:
+                sentinela_aux = sentinela_aux.prox
+                posicao += 1
+                
+        else:
+            posicao = self.tamanho
+            sentinela_aux = self.sentinela
+
+            while posicao != i:
+                sentinela_aux = sentinela_aux.ante
+                posicao -= 1
             
-        sentinela_aux = self.sentinela       
-        atual = self._encontrar_no(i)
-     
-        return atual.item
+        return sentinela_aux.item
     
 
     def set(self, i: int, item: int):
@@ -153,9 +166,23 @@ class Lista:
         if i < 0 or i >= self.num_itens():
             raise ValueError('índice fora do alcance.')    
         
-        atual = self._encontrar_no(i)
-        atual.item = item
+        sentinela_aux = self.sentinela
+        
+        if i <= (self.tamanho // 2):
+            posicao = -1
             
+            while posicao != i:
+                sentinela_aux = sentinela_aux.prox
+                posicao += 1
+                
+        else:
+            posicao = self.tamanho
+            
+            while posicao != i:
+                sentinela_aux = sentinela_aux.ante
+                posicao -= 1        
+                
+        sentinela_aux.item = item    
 
     def insere(self, i: int, item: int):
         '''
@@ -182,8 +209,20 @@ class Lista:
             raise ValueError('índice fora do alcance.')
 
         novo_no = No(item)
-        atual = self._encontrar_no(i, True)
-        insere(atual, novo_no)
+        sentinela_aux = self.sentinela
+
+        if i <= (self.tamanho // 2):
+            for esq in range(i):
+                sentinela_aux = sentinela_aux.prox
+                
+            insere(sentinela_aux, novo_no)
+                
+        else:
+            for dir in range(self.tamanho - i):
+                sentinela_aux = sentinela_aux.ante
+                
+            insere(sentinela_aux.ante, novo_no)
+
         self.tamanho += 1
 
 
@@ -225,9 +264,26 @@ class Lista:
         if i < 0 or i > self.num_itens():
             raise ValueError('índice fora do alcance.')
 
+        sentinela_aux = self.sentinela
 
-        atual = self._encontrar_no(i)
-        remove(atual)
+        if i <= (self.tamanho // 2):
+            indice_virtual = 0
+            
+            while indice_virtual != i:
+                sentinela_aux = sentinela_aux.prox
+                indice_virtual += 1
+                
+            remove(sentinela_aux.prox)
+            
+        else:
+            indice_virtual = self.tamanho
+            
+            while indice_virtual != i:
+                sentinela_aux = sentinela_aux.ante
+                indice_virtual -= 1
+                
+            remove(sentinela_aux.ante)
+
         self.tamanho -= 1
         
         
@@ -269,13 +325,12 @@ class Lista:
         ...
         ValueError: o item não está na lista.
         '''
-
+        
         sentinela_aux = self.sentinela.prox
         
         for i in range(self.tamanho):
             if sentinela_aux.item == item:
                 return i
-            
             sentinela_aux = sentinela_aux.prox
             
         raise ValueError('o item não está na lista.')
@@ -312,33 +367,9 @@ class Lista:
         return self.sentinela.prox is self.sentinela
     
     
-    def _encontrar_no(self, i: int, inclui_sentinela: bool = False) -> No:
-        '''
-        Função auxiliar que encontra e retorna o nó na posição i.
-        Se inclui_sentinela for True, retorna o nó anterior à posição i.
-        
-        Navega pelo caminho mais curto (início ou fim da lista).
-        Requer que i seja um índice válido.
-        '''
-        if i < 0 or i > self.tamanho:
-            raise ValueError('índice fora do alcance')
-            
-        # Decide se começa do início ou do fim
-        if i <= self.tamanho // 2:
-            # Navega a partir do início
-            atual = self.sentinela if inclui_sentinela else self.sentinela.prox
-            for esq in range(i):
-                atual = atual.prox
-        else:
-            # Navega a partir do fim
-            if inclui_sentinela:
-                atual = self.sentinela
-                for dir in range((self.tamanho + 1) - i):
-                    atual = atual.ante
-            else:
-                atual = self.sentinela.ante
-                for dir in range(self.tamanho - i - 1):
-                    atual = atual.ante
-        
-        return atual
     
+lst = Lista()
+lst.insere(0, 2)
+lst.insere(0, 5)
+lst.insere(2, 9)
+lst.insere(1, 1)    

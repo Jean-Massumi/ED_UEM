@@ -282,7 +282,7 @@ def remove_arvore(t: Arvore, val: int) -> No:
             #  com         sem
             #  max         max
             m = maximo(t.esq)
-            t.chave = m
+            t.val = m
             t.esq = remove_arvore(t.esq, m)
             return t
 
@@ -311,26 +311,21 @@ class Conjunto:
 
     Exemplos
 
-    # >>> c1 = Conjunto()
-    # >>> c1.insere(10)
-    # >>> c1.insere(3)
-    # >>> c1.insere(12)
-    # >>> c1.insere(7)
-    # >>> c1.em_ordem()
-    # [3, 7, 10, 12]
-    # >>> c2 = Conjunto()
-    # >>> c2.insere(20)
-    # >>> c2.insere(3)
-    # >>> c2.insere(1)
-    # >>> c2.insere(10)
-    # >>> c2.em_ordem
-    # [1, 3, 10, 20]
-    # >>> c1.intersecao(c2).em_ordem()
-    # [3, 7]
-    # >>> c1.remove(12)
-    # >>> c2.remove(12)
-    # >>> c1.uniao(c2).em_ordem()
-    # [1, 3, 7, 10, 20]
+    >>> c1 = Conjunto()
+    >>> c1.insere(10)
+    >>> c1.insere(3)
+    >>> c1.insere(12)
+    >>> c1.insere(7)
+    >>> c1.insere(20)
+    >>> c2 = Conjunto()
+    >>> c2.insere(20)
+    >>> c2.insere(3)
+    >>> c2.insere(1)
+    >>> c2.insere(10)
+    >>> c3 = Conjunto()
+    >>> c3 = c1.intersecao(c2)
+    >>> c3.arvore_conjunto
+     No(esq=No(esq=None, val=3, dir=None, altura=0), val=10, dir=No(esq=None, val=20, dir=None, altura=0), altura=1)
     '''
     
     arvore_conjunto: Arvore
@@ -346,29 +341,54 @@ class Conjunto:
         Insere *valor* no conjunto
         
         Exemplos:
-        >>> c = Conjunto()
-        >>> c.insere(6)
-        >>> c.insere(10)
-        >>> c.insere(13)
-        >>> c.arvore_conjunto.val
-        10
-        >>> c.arvore_conjunto.esq.val
-        6
-        >>> c.arvore_conjunto.dir.val
-        13
-    
+        # >>> c = Conjunto()
+        # >>> c.insere(6)
+        # >>> c.insere(8)
+        # >>> c.insere(7)
+        # >>> c.arvore_conjunto.val
+        # 7
+        # >>> c.arvore_conjunto.esq.val
+        # 6
+        # >>> c.arvore_conjunto.dir.val
+        # 8
+
         '''
         
         self.arvore_conjunto = insere_arvore(self.arvore_conjunto , valor)
 
     def remove(self, valor: int) -> None:
-        '''Remove o *valor* do conjunto, se ele estiver presente.'''
+        '''
+        Remove o *valor* do conjunto, se ele estiver presente.
+        
+        Exemplos:
+        
+        # >>> c = Conjunto()
+        # >>> c.insere(5)
+        # >>> c.insere(4)
+        # >>> c.insere(3)
+        # >>> c.remove(5)
+        # >>> c.arvore_conjunto.val
+        # 4
+        # >>> c.arvore_conjunto.esq.val
+        # 3
+        # >>> c.arvore_conjunto.dir is None
+        # True
+        '''
 
         self.arvore_conjunto = remove_arvore(self.arvore_conjunto, valor)  
 
 
     def intersecao(self, outro: Conjunto) -> Conjunto:
-        '''Cria um novo conjunto com os elementos que *self* e *outro* têm em comum.'''
+        '''
+        Cria um novo conjunto com os elementos que *self* e *outro* têm em comum.
+        
+        Exemplos
+        
+        >>>
+        '''
+        
+        novo_conjunto = Conjunto()
+        return _auxilia_intersecao(self.arvore_conjunto, outro.arvore_conjunto, novo_conjunto)
 
 
     def uniao(self, outro: Conjunto) -> Conjunto:
@@ -378,3 +398,41 @@ class Conjunto:
 
     def em_ordem(self) -> list[int]:
         '''Devolve uma lista com os elemento do conjunto em ordem.'''
+        
+        
+def _auxilia_intersecao(t1: Arvore, t2: Arvore, novo: Conjunto) -> Conjunto:
+    if t2 is not None:
+        val = t2.val
+        
+        if busca_arvore(t1, val):
+            novo.insere(val)
+        
+        _auxilia_intersecao(t1, t2.esq, novo)
+        _auxilia_intersecao(t1, t2.dir, novo)
+        
+    return novo
+   
+        
+        
+        
+        
+        
+        
+def busca_arvore(t: Arvore, val: int) -> bool:
+    '''
+    
+    '''
+    if t is None:
+        return False
+    
+    else:
+        if t.val == val:
+            return True
+        
+        elif val < t.val:
+            return busca_arvore(t.esq, val)
+        
+        else:
+            return busca_arvore(t.dir, val)
+
+

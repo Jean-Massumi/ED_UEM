@@ -116,9 +116,21 @@ class Conjunto:
         >>> c1.intersecao(c2).em_ordem()
         [10, 20]
         '''
-        
         novo_conjunto = Conjunto()
-        return self._auxilia_intersecao(outro.arvore_conjunto, novo_conjunto)
+        
+        def percorre_e_verifica(t: Arvore):
+            if t is not None:
+                percorre_e_verifica(t.esq)
+                
+                # Se o valor atual existe em ambas as árvores
+                if busca(self.arvore_conjunto, t.val):
+                    novo_conjunto.insere(t.val)
+                    
+                percorre_e_verifica(t.dir)
+    
+        percorre_e_verifica(outro.arvore_conjunto)
+        
+        return novo_conjunto
 
 
     def uniao(self, outro: Conjunto) -> Conjunto:
@@ -146,7 +158,18 @@ class Conjunto:
         '''
 
         novo_conjunto = Conjunto()
-        return self._auxilia_uniao(outro.arvore_conjunto, novo_conjunto)
+        
+        def percorre_e_insere(t: Arvore):
+            if t is not None:
+                percorre_e_insere(t.esq)
+                novo_conjunto.insere(t.val)
+                percorre_e_insere(t.dir)
+        
+        # Percorre as duas árvores em ordem
+        percorre_e_insere(self.arvore_conjunto)
+        percorre_e_insere(outro.arvore_conjunto)
+        
+        return novo_conjunto
 
 
     def em_ordem(self) -> list[int]:
@@ -155,47 +178,16 @@ class Conjunto:
         '''
         
         lista_conjunto = []   
-
-        return self._auxiliar_em_ordem(self.arvore_conjunto, lista_conjunto)
-            
-
-    def _auxilia_intersecao(self, t2: Arvore, novo_conj: Conjunto) -> Conjunto:
-        # Função auxiliar para interseção.
-
-        if t2 is not None:
-            val = t2.val
-            
-            if busca(self.arvore_conjunto, val):
-                novo_conj.insere(val)
-            
-            self._auxilia_intersecao(t2.esq, novo_conj)
-            self._auxilia_intersecao(t2.dir, novo_conj)
-            
-        return novo_conj
-   
-    
-    def _auxilia_uniao(self, t2: Arvore, novo_conj: Conjunto) -> Conjunto:
-        # Função auxiliar para união que usa percurso em ordem.
         
-        def percorre_e_insere(t: Arvore):
+        def _auxiliar_em_ordem(t: Arvore) -> None:
+            # Função auxiliar para ordenar os elementos do conjunto.
+        
             if t is not None:
-                percorre_e_insere(t.esq)
-                novo_conj.insere(t.val)
-                percorre_e_insere(t.dir)
+                _auxiliar_em_ordem(t.esq)
+                lista_conjunto.append(t.val)
+                _auxiliar_em_ordem(t.dir)
+                
+        _auxiliar_em_ordem(self.arvore_conjunto)
         
-        # Percorre as duas árvores em ordem
-        percorre_e_insere(self.arvore_conjunto)
-        percorre_e_insere(t2)
-        
-        return novo_conj
-        
- 
-    def _auxiliar_em_ordem(self, t: Arvore, lista_conjunto) -> list[int]:
-        # Função auxiliar para ordenar os elementos do conjunto.
-       
-        if t is not None:
-            self._auxiliar_em_ordem(t.esq, lista_conjunto)
-            lista_conjunto.append(t.val)
-            self._auxiliar_em_ordem(t.dir, lista_conjunto)
-            
         return lista_conjunto
+            

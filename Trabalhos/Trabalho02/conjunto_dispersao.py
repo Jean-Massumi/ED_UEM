@@ -46,3 +46,5 @@ class Conjunto:
 
     def em_ordem(self) -> list[int]:
         '''Devolve uma lista com os elemento do conjunto em ordem.'''
+        
+        

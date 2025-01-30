@@ -99,7 +99,7 @@ def insere_arvore(t: Arvore, val: int) -> No:
 
 
 
-def remove_arvore(t: Arvore, val: int) -> No:
+def remove_arvore(t: Arvore, val: int) -> No | None:
     r'''
     Devolve a raiz da árvore AVL que é o resultado da remoção de *val* em *t*.
 
@@ -250,15 +250,15 @@ def rotaciona_esq(r: No) -> No:
     >>> # Verifica
     >>> nr is x
     True
-    >>> x == No(r, '4', C, 2)
+    >>> x == No(r, 4, C, 2)
     True
-    >>> r == No(A, '2', B, 1)
+    >>> r == No(A, 2, B, 1)
     True
-    >>> A == No(None, '1', None, 0)
+    >>> A == No(None, 1, None, 0)
     True
-    >>> B == No(None, '3', None, 0)
+    >>> B == No(None, 3, None, 0)
     True
-    >>> C == No(None, '5', None, 0)
+    >>> C == No(None, 5, None, 0)
     True
     '''
     
@@ -300,15 +300,15 @@ def rotaciona_dir(r: No) -> No:
     >>> # Verifica
     >>> nx is r
     True
-    >>> x == No(B, '4', C, 1)
+    >>> x == No(B, 4, C, 1)
     True
-    >>> r == No(A, '2', x, 2)
+    >>> r == No(A, 2, x, 2)
     True
-    >>> A == No(None, '1', None, 0)
+    >>> A == No(None, 1, None, 0)
     True
-    >>> B == No(None, '3', None, 0)
+    >>> B == No(None, 3, None, 0)
     True
-    >>> C == No(None, '5', None, 0)
+    >>> C == No(None, 5, None, 0)
     True
     '''
     
@@ -357,19 +357,19 @@ def rebalanceia_esq(r: No) -> No:
     >>> # Verifica
     >>> nr is x
     True
-    >>> x == No(y, '4', r, 2)
+    >>> x == No(y, 4, r, 2)
     True
-    >>> r == No(C, '6', D, 1)
+    >>> r == No(C, 6, D, 1)
     True
-    >>> y == No(A, '2', B, 1)
+    >>> y == No(A, 2, B, 1)
     True
-    >>> A == No(None, '1', None, 0)
+    >>> A == No(None, 1, None, 0)
     True
-    >>> B == No(None, '3', None, 0)
+    >>> B == No(None, 3, None, 0)
     True
-    >>> C == No(None, '5', None, 0)
+    >>> C == No(None, 5, None, 0)
     True
-    >>> D == No(None, '7', None, 0)
+    >>> D == No(None, 7, None, 0)
     True
 
 
@@ -399,19 +399,19 @@ def rebalanceia_esq(r: No) -> No:
     >>> # Verifica
     >>> nr is y
     True
-    >>> y == No(x, '4', r, 2)
+    >>> y == No(x, 4, r, 2)
     True
-    >>> r == No(C, '6', D, 1)
+    >>> r == No(C, 6, D, 1)
     True
-    >>> x == No(A, '2', B, 1)
+    >>> x == No(A, 2, B, 1)
     True
-    >>> A == No(None, '1', None, 0)
+    >>> A == No(None, 1, None, 0)
     True
-    >>> B == No(None, '3', None, 0)
+    >>> B == No(None, 3, None, 0)
     True
-    >>> C == No(None, '5', None, 0)
+    >>> C == No(None, 5, None, 0)
     True
-    >>> D == No(None, '7', None, 0)
+    >>> D == No(None, 7, None, 0)
     True
     '''
     assert r.esq is not None
@@ -467,19 +467,19 @@ def rebalanceia_dir(r: No) ->No:
     >>> # Verifica
     >>> nr is x
     True
-    >>> x == No(r, '4', y, 2)
+    >>> x == No(r, 4, y, 2)
     True
-    >>> r == No(A, '6', B, 1)
+    >>> r == No(A, 6, B, 1)
     True
-    >>> y == No(C, '2', D, 1)
+    >>> y == No(C, 2, D, 1)
     True
-    >>> A == No(None, '7', None, 0)
+    >>> A == No(None, 7, None, 0)
     True
-    >>> B == No(None, '5', None, 0)
+    >>> B == No(None, 5, None, 0)
     True
-    >>> C == No(None, '3', None, 0)
+    >>> C == No(None, 3, None, 0)
     True
-    >>> D == No(None, '1', None, 0)
+    >>> D == No(None, 1, None, 0)
     True
 
     #Caso 2 - direita-esquerda
@@ -506,19 +506,19 @@ def rebalanceia_dir(r: No) ->No:
     >>> # Verifica
     >>> nr is y
     True
-    >>> y == No(r, '4', x, 2)
+    >>> y == No(r, 4, x, 2)
     True
-    >>> r == No(D, '6', B, 1)
+    >>> r == No(D, 6, B, 1)
     True
-    >>> x == No(C, '2', A, 1)
+    >>> x == No(C, 2, A, 1)
     True
-    >>> A == No(None, '7', None, 0)
+    >>> A == No(None, 7, None, 0)
     True
-    >>> B == No(None, '5', None, 0)
+    >>> B == No(None, 5, None, 0)
     True
-    >>> C == No(None, '3', None, 0)
+    >>> C == No(None, 3, None, 0)
     True
-    >>> D == No(None, '1', None, 0)
+    >>> D == No(None, 1, None, 0)
     True
     '''
     assert r.dir is not None
@@ -558,12 +558,12 @@ def maximo(no: No) -> int:
     return no.val
 
 
-def _cria_nos(valores: int) -> list[No]:
+def _cria_nos(valores: str) -> list[No]:
     # Cria uma lista de nós com cada caractere de *chaves* sendo uma chave.
     # Esta função é utilizada para simplificar a criação dos testes.
     nos = []
     for val in valores:
-        nos.append(No(None, val, None, 0))
+        nos.append(No(None, int(val), None, 0))
     return nos
 
 

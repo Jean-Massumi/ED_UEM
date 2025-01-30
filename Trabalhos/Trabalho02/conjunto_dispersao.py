@@ -20,30 +20,30 @@ class Conjunto:
 
     Exemplos
 
-    # >>> c1 = Conjunto()
-    # >>> c1.insere(10)
-    # >>> c1.insere(3)
-    # >>> c1.insere(12)
-    # >>> c1.insere(7)
-    # >>> c1.em_ordem()
-    # [3, 7, 10, 12]
-    # >>> c2 = Conjunto()
-    # >>> c2.insere(20)
-    # >>> c2.insere(3)
-    # >>> c2.insere(1)
-    # >>> c2.insere(10)
-    # >>> c2.em_ordem
-    # [1, 3, 10, 20]
-    # >>> c1.intersecao(c2).em_ordem()
-    # [3, 7]
-    # >>> c1.remove(12)
-    # >>> c2.remove(12)
-    # >>> c1.uniao(c2).em_ordem()
-    # [1, 3, 7, 10, 20]
+    >>> c1 = Conjunto()
+    >>> c1.insere(10)
+    >>> c1.insere(3)
+    >>> c1.insere(12)
+    >>> c1.insere(7)
+    >>> c1.em_ordem()
+    [3, 7, 10, 12]
+    >>> c2 = Conjunto()
+    >>> c2.insere(20)
+    >>> c2.insere(3)
+    >>> c2.insere(1)
+    >>> c2.insere(10)
+    >>> c2.em_ordem()
+    [1, 3, 10, 20]
+    >>> c1.intersecao(c2).em_ordem()
+    [3, 10]
+    >>> c1.remove(12)
+    >>> c2.remove(12)
+    >>> c1.uniao(c2).em_ordem()
+    [1, 3, 7, 10, 20]
     '''
     
     tabela_conjunto: array
-    qtd_itens: int
+    qtd_valores: int
 
     def __init__(self) -> None:
         '''
@@ -51,7 +51,7 @@ class Conjunto:
         '''
         
         self.tabela_conjunto = array(TAMANHO_INICIAL, TipoRemocao.VAZIO)
-        self.qtd_itens = 0
+        self.qtd_valores = 0
         
 
     def insere(self, valor: int) -> None:
@@ -76,7 +76,7 @@ class Conjunto:
         [2, 5, 6, 8, 9, 10, 12, 14, 20, 25, 30, 40]
         '''
 
-        if (self.qtd_itens / len(self.tabela_conjunto)) > FATOR_CARGA_MAXIMA:
+        if (self.qtd_valores / len(self.tabela_conjunto)) > FATOR_CARGA_MAXIMA:
             self._cresce()
 
         indice = calcular_indice(valor, len(self.tabela_conjunto))  
@@ -110,8 +110,8 @@ class Conjunto:
         [5, 6, 8, 10, 20, 25, 30, 40]
         '''
         # Diminui caso a quantidade de elementos seja menor ou igual a 20%
-        if (self.qtd_itens / len(self.tabela_conjunto)) <= FATOR_CARGA_MINIMA: 
-            self._diminui() #implementar
+        if (self.qtd_valores / len(self.tabela_conjunto)) <= FATOR_CARGA_MINIMA: 
+            self._diminui() 
             
         indice = calcular_indice(valor, len(self.tabela_conjunto))
         
@@ -122,9 +122,48 @@ class Conjunto:
         '''
         Cria um novo conjunto com os elementos que *self* e *outro* têm em comum.
         
-        '''
+        Exemplos
+        >>> c1 = Conjunto()
+        >>> c1.insere(10)     
+        >>> c1.insere(20)      
+        >>> c1.insere(5)       
+        >>> c1.insere(15)    
+        >>> c1.insere(25)      
+
+        # Segundo conjunto
+        >>> c2 = Conjunto()
+        >>> c2.insere(10)     
+        >>> c2.insere(40)     
+        >>> c2.insere(30)     
+        >>> c2.insere(50)     
+        >>> c2.insere(20)     
         
-        return NotImplementedError
+        >>> c1.intersecao(c2).em_ordem()
+        [10, 20]
+        '''
+        conjunto_intersecao = Conjunto()
+
+
+        def _intersecao(indice: int, tabela_menor: array, tabela_maior: array) -> None:
+            if indice == len(tabela_menor):
+                return
+            
+            val = tabela_menor[indice]
+            if self._eh_int(val):
+                if self._auxilia_intersecao(val, tabela_maior):
+                    conjunto_intersecao.insere(val)
+
+            _intersecao(indice + 1, tabela_menor, tabela_maior)
+            
+            
+        if self.qtd_valores <= outro.qtd_valores:
+            _intersecao(0, self.tabela_conjunto, outro.tabela_conjunto)
+
+        else:
+            _intersecao(0, outro.tabela_conjunto, self.tabela_conjunto)
+        
+        return conjunto_intersecao
+
 
     def uniao(self, outro: Conjunto) -> Conjunto:
         '''
@@ -152,16 +191,16 @@ class Conjunto:
         conjunto_uniao = Conjunto()
 
         for val in self.tabela_conjunto:
-            if self._e_int(val):
+            if self._eh_int(val):
                 conjunto_uniao.insere(val)
                 
         for val in outro.tabela_conjunto:
-            if  self._e_int(val):
+            if  self._eh_int(val):
                 conjunto_uniao.insere(val)
 
         return conjunto_uniao
         
-
+        
     def em_ordem(self) -> list[int]:
         '''
         Devolve uma lista com os elemento do conjunto em ordem.
@@ -170,19 +209,39 @@ class Conjunto:
         
         lista_ordenada = []
         for val in self.tabela_conjunto:
-            if  self._e_int(val):
+            if  self._eh_int(val):
                 lista_ordenada.append(val)
                 
         ordena_heap(lista_ordenada)
         
         return lista_ordenada
         
+       
+    def _auxilia_intersecao(self, val: int, tabela_maior: array) -> bool:
+        '''
+        Verifica se val está no outro conjunto.
+        '''
+        indice = calcular_indice(val, len(tabela_maior))
+        
+        def _inter(val: int, t_maior: array, indice: int) -> bool:
+            if tabela_maior[indice] == TipoRemocao.VAZIO:
+                return False
+            
+            elif tabela_maior[indice] == val:
+                return True
+
+            else: # se val != numero e val == TipoRemocao.REMOVIDO
+                indice = (indice + 1) % len(tabela_maior)
+                return _inter(val, t_maior, indice)
+       
+        return _inter(val, tabela_maior, indice) 
+       
         
     def _auxilia_insere(self, val: int, indice: int) -> None:
         if (self.tabela_conjunto[indice] == TipoRemocao.VAZIO) or \
                 (self.tabela_conjunto[indice] == TipoRemocao.REMOVIDO):
             self.tabela_conjunto[indice] = val
-            self.qtd_itens += 1
+            self.qtd_valores += 1
             
         elif self.tabela_conjunto[indice] == val:
             return
@@ -197,6 +256,7 @@ class Conjunto:
 
         elif self.tabela_conjunto[indice] == val: #remover e marcar
             self.tabela_conjunto[indice] = TipoRemocao.REMOVIDO  
+            self.qtd_valores -= 1
 
         else: # "/" ou valor numérico
             self._auxilia_remocao(val, (indice + 1))  
@@ -210,7 +270,7 @@ class Conjunto:
         self.tabela_conjunto = nova_tabela
 
         for val in tabela_auxiliar:
-            if  self._e_int(val):
+            if  self._eh_int(val):
                 indice = calcular_indice(val, capacidade)
                 self._auxilia_insere(val, indice)
             
@@ -223,12 +283,12 @@ class Conjunto:
         self.tabela_conjunto = nova_tabela
 
         for val in tabela_auxiliar:
-            if self._e_int(val):
+            if self._eh_int(val):
                 indice = calcular_indice(val, capacidade)
                 self._auxilia_insere(self, val, indice)
 
 
-    def _e_int(self, val: int):
+    def _eh_int(self, val: int):
         return val != TipoRemocao.VAZIO and val != TipoRemocao.REMOVIDO
 
     

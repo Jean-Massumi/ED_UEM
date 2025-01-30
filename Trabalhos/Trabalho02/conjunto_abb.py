@@ -175,6 +175,16 @@ class Conjunto:
     def em_ordem(self) -> list[int]:
         '''
         Devolve uma lista com os elemento do conjunto em ordem.
+        
+        Exemplos
+        >>> c = Conjunto()
+        >>> c.em_ordem()
+        []
+        >>> c.insere(18)
+        >>> c.insere(25)
+        >>> c.insere(20)
+        >>> c.em_ordem()
+        [18, 20, 25]
         '''
         
         lista_conjunto = []   

@@ -10,7 +10,6 @@ class No:
 
 Arvore = No | None
 
-
 def busca(t: Arvore, val: int) -> bool:
     '''
     Devolve True se *val* está em *t*, False caso contrário.
@@ -593,5 +592,3 @@ def altura_correta(r: Arvore) -> bool:
         r.altura == 1 + max(altura(r.esq), altura(r.dir)) and \
         altura_correta(r.esq) and \
         altura_correta(r.dir)
-
-

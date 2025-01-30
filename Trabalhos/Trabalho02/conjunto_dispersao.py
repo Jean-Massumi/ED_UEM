@@ -2,17 +2,21 @@ from __future__ import annotations
 from enum import Enum, auto
 from ed import array
 
+# Tamanho inicial da tabela hash
 TAMANHO_INICIAL = 10
 
+# Fatores para redimensionar a tabela
 FATOR_CRESCIMENTO = FATOR_DECRESCIMENTO = 2
 
+# 70% de ocupação máxima para a tabela ser aumentada
 FATOR_CARGA_MAXIMA = 0.7
 
+# 20% de ocupação mínima para a tabela ser reduzida
 FATOR_CARGA_MINIMA = 0.2
 
 class TipoRemocao(Enum):
-    VAZIO = 1
-    REMOVIDO = 2
+    VAZIO = 1       # Posição nunca foi ocupada
+    REMOVIDO = 2    # Posição tinha um elemento que foi removido
 
 class Conjunto:
     '''
@@ -41,13 +45,16 @@ class Conjunto:
     >>> c1.uniao(c2).em_ordem()
     [1, 3, 7, 10, 20]
     '''
-    
+    # Array que armazena os elementos do conjunto
     tabela_conjunto: array
+    
+    # Quantidade atual de elementos no conjunto
     qtd_valores: int
 
     def __init__(self) -> None:
         '''
-        Cria um novo conjunto vazio
+        Inicializa um conjunto vazio com tamanho inicial padrão.
+        Todas as posições são marcadas inicialmente como VAZIO.
         '''
         
         self.tabela_conjunto = array(TAMANHO_INICIAL, TipoRemocao.VAZIO)
@@ -56,7 +63,8 @@ class Conjunto:
 
     def insere(self, valor: int) -> None:
         '''
-        Insere *valor* no conjunto
+        Insere um valor no conjunto se ele ainda não existir.
+        Realiza o redimensionamento da tabela se necessário.
         
         Exemplos
         >>> c = Conjunto()
@@ -76,11 +84,12 @@ class Conjunto:
         [2, 5, 6, 8, 9, 10, 12, 14, 20, 25, 30, 40]
         '''
 
+        # Aumenta caso a quantidade seja maior que 70%
         if (self.qtd_valores / len(self.tabela_conjunto)) > FATOR_CARGA_MAXIMA:
             self._cresce()
 
-        indice = calcular_indice(valor, len(self.tabela_conjunto))  
-        
+        # Calcula o índice inicial para inserção
+        indice = calcular_indice(valor, len(self.tabela_conjunto))     
         self._auxilia_insere(valor, indice)
 
 
@@ -113,8 +122,8 @@ class Conjunto:
         if (self.qtd_valores / len(self.tabela_conjunto)) <= FATOR_CARGA_MINIMA: 
             self._diminui() 
             
-        indice = calcular_indice(valor, len(self.tabela_conjunto))
-        
+        # Calcula o índice inicial para remoção
+        indice = calcular_indice(valor, len(self.tabela_conjunto)) 
         self._auxilia_remocao(valor, indice)
 
 
@@ -143,24 +152,23 @@ class Conjunto:
         '''
         conjunto_intersecao = Conjunto()
 
-
-        def _intersecao(indice: int, tabela_menor: array, tabela_maior: array) -> None:
+        def _processar_intersecao(indice: int, tabela_menor: array, tabela_maior: array) -> None:
             if indice == len(tabela_menor):
                 return
             
             val = tabela_menor[indice]
             if self._eh_int(val):
-                if self._auxilia_intersecao(val, tabela_maior):
+                if self._existe_no_conjunto(val, tabela_maior):
                     conjunto_intersecao.insere(val)
 
-            _intersecao(indice + 1, tabela_menor, tabela_maior)
+            _processar_intersecao(indice + 1, tabela_menor, tabela_maior)      
             
-            
+        # Escolhe a menor tabela para iterar (otimização)
         if self.qtd_valores <= outro.qtd_valores:
-            _intersecao(0, self.tabela_conjunto, outro.tabela_conjunto)
+            _processar_intersecao(0, self.tabela_conjunto, outro.tabela_conjunto)
 
         else:
-            _intersecao(0, outro.tabela_conjunto, self.tabela_conjunto)
+            _processar_intersecao(0, outro.tabela_conjunto, self.tabela_conjunto)
         
         return conjunto_intersecao
 
@@ -189,14 +197,20 @@ class Conjunto:
         [5, 10, 15, 20, 25, 30, 40, 50]
         '''
         conjunto_uniao = Conjunto()
-
-        for val in self.tabela_conjunto:
-            if self._eh_int(val):
-                conjunto_uniao.insere(val)
-                
-        for val in outro.tabela_conjunto:
-            if  self._eh_int(val):
-                conjunto_uniao.insere(val)
+        
+        def _faz_uniao(indice: int, tabela: array):
+            if indice == len(tabela):
+                return
+            
+            else:
+                val = tabela[indice]
+                if self._eh_int(val):
+                    conjunto_uniao.insere(val)
+                    
+            _faz_uniao(indice + 1, tabela)
+                    
+        _faz_uniao(0, self.tabela_conjunto)
+        _faz_uniao(0, outro.tabela_conjunto)
 
         return conjunto_uniao
         
@@ -205,6 +219,15 @@ class Conjunto:
         '''
         Devolve uma lista com os elemento do conjunto em ordem.
         
+        Exemplos
+        >>> c = Conjunto()
+        >>> c.em_ordem()
+        []
+        >>> c.insere(18)
+        >>> c.insere(25)
+        >>> c.insere(20)
+        >>> c.em_ordem()
+        [18, 20, 25]
         '''
         
         lista_ordenada = []
@@ -217,24 +240,24 @@ class Conjunto:
         return lista_ordenada
         
        
-    def _auxilia_intersecao(self, val: int, tabela_maior: array) -> bool:
+    def _existe_no_conjunto(self, val: int, tabela_maior: array) -> bool:
         '''
         Verifica se val está no outro conjunto.
         '''
         indice = calcular_indice(val, len(tabela_maior))
         
-        def _inter(val: int, t_maior: array, indice: int) -> bool:
+        def _localizar_elemento(val: int, t_maior: array, indice: int) -> bool:
             if tabela_maior[indice] == TipoRemocao.VAZIO:
                 return False
             
             elif tabela_maior[indice] == val:
                 return True
 
-            else: # se val != numero e val == TipoRemocao.REMOVIDO
+            else: # se val != numero ou val == TipoRemocao.REMOVIDO
                 indice = (indice + 1) % len(tabela_maior)
-                return _inter(val, t_maior, indice)
+                return _localizar_elemento(val, t_maior, indice)
        
-        return _inter(val, tabela_maior, indice) 
+        return _localizar_elemento(val, tabela_maior, indice) 
        
         
     def _auxilia_insere(self, val: int, indice: int) -> None:
@@ -250,7 +273,7 @@ class Conjunto:
             self._auxilia_insere(val, (indice + 1))
             
         
-    def _auxilia_remocao(self, val:int, indice: int) -> None:
+    def _auxilia_remocao(self, val: int, indice: int) -> None:
         if self.tabela_conjunto[indice] == TipoRemocao.VAZIO:
             return
 
@@ -259,7 +282,8 @@ class Conjunto:
             self.qtd_valores -= 1
 
         else: # "/" ou valor numérico
-            self._auxilia_remocao(val, (indice + 1))  
+            indice = (indice + 1) % len(self.tabela_conjunto)
+            self._auxilia_remocao(val, indice)  
             
             
     def _cresce(self):
@@ -285,7 +309,7 @@ class Conjunto:
         for val in tabela_auxiliar:
             if self._eh_int(val):
                 indice = calcular_indice(val, capacidade)
-                self._auxilia_insere(self, val, indice)
+                self._auxilia_insere(val, indice)
 
 
     def _eh_int(self, val: int):
@@ -305,6 +329,8 @@ def ordena_heap(lst: list[int]) -> None:
         lst[0], lst[i] = lst[i], lst[0]
         #Concerta a raiz do heap
         concerta_heap(lst, i, 0)
+ 
+
                 
         
 def concerta_heap(lst: list[int], tam: int, i: int):
@@ -313,9 +339,9 @@ def concerta_heap(lst: list[int], tam: int, i: int):
     precisa_ajustar = True
     
     while precisa_ajustar:
-        fesq = 2 * i + 1
-        fdir = 2 * i + 2
-        imax = i
+        fesq = 2 * i + 1 # 17
+        fdir = 2 * i + 2 # 18
+        imax = i # 8
 
         if fesq < tam and lst[fesq] > lst[imax]:
             imax = fesq
@@ -333,93 +359,3 @@ def concerta_heap(lst: list[int], tam: int, i: int):
         
 def calcular_indice(valor: int, tam: int) -> int:
     return valor % tam
-
-
-# def testa_heap():
-#     # Teste 1: Lista desordenada simples
-#     print("=== Teste 1 - Lista desordenada simples ===")
-#     lista1 = [4, 10, 3, 5, 1]
-#     print("Original:", lista1)
-    
-#     # Testando criação do heap
-#     lista1_heap = lista1.copy()
-#     inicializa_heap(lista1_heap)
-#     print("Após criar heap:", lista1_heap)
-#     print("É um min-heap válido?", verifica_min_heap(lista1_heap))
-    
-#     # Testando ordenação
-#     lista1_ordenada = lista1.copy()
-#     ordena_heap(lista1_ordenada)
-#     print("Após ordenar:", lista1_ordenada)
-#     print("Está ordenada?", esta_ordenada(lista1_ordenada))
-#     print()
-
-#     # Teste 2: Lista já ordenada
-#     print("=== Teste 2 - Lista já ordenada ===")
-#     lista2 = [1, 2, 3, 4, 5]
-#     print("Original:", lista2)
-    
-#     lista2_heap = lista2.copy()
-#     inicializa_heap(lista2_heap)
-#     print("Após criar heap:", lista2_heap)
-#     print("É um min-heap válido?", verifica_min_heap(lista2_heap))
-    
-#     lista2_ordenada = lista2.copy()
-#     ordena_heap(lista2_ordenada)
-#     print("Após ordenar:", lista2_ordenada)
-#     print("Está ordenada?", esta_ordenada(lista2_ordenada))
-#     print()
-
-#     # Teste 3: Lista com elementos repetidos
-#     print("=== Teste 3 - Lista com elementos repetidos ===")
-#     lista3 = [3, 3, 1, 2, 2]
-#     print("Original:", lista3)
-    
-#     lista3_heap = lista3.copy()
-#     inicializa_heap(lista3_heap)
-#     print("Após criar heap:", lista3_heap)
-#     print("É um min-heap válido?", verifica_min_heap(lista3_heap))
-    
-#     lista3_ordenada = lista3.copy()
-#     ordena_heap(lista3_ordenada)
-#     print("Após ordenar:", lista3_ordenada)
-#     print("Está ordenada?", esta_ordenada(lista3_ordenada))
-#     print()
-
-#     # Teste 4: Lista com número par de elementos
-#     print("=== Teste 4 - Lista com número par de elementos ===")
-#     lista4 = [6, 5, 4, 3, 2, 1]
-#     print("Original:", lista4)
-    
-#     lista4_heap = lista4.copy()
-#     inicializa_heap(lista4_heap)
-#     print("Após criar heap:", lista4_heap)
-#     print("É um min-heap válido?", verifica_min_heap(lista4_heap))
-    
-#     lista4_ordenada = lista4.copy()
-#     ordena_heap(lista4_ordenada)
-#     print("Após ordenar:", lista4_ordenada)
-#     print("Está ordenada?", esta_ordenada(lista4_ordenada))
-
-# def verifica_min_heap(lst):
-#     """
-#     Função auxiliar para verificar se a lista é um min-heap válido
-#     """
-#     for i in range(len(lst)):
-#         fesq = 2 * i + 1
-#         fdir = 2 * i + 2
-        
-#         if fesq < len(lst) and lst[fesq] < lst[i]:
-#             return False
-#         if fdir < len(lst) and lst[fdir] < lst[i]:
-#             return False
-#     return True
-
-# def esta_ordenada(lst):
-#     """
-#     Função auxiliar para verificar se a lista está ordenada
-#     """
-#     return all(lst[i] <= lst[i+1] for i in range(len(lst)-1))
-
-# # Executar os testes
-# testa_heap()

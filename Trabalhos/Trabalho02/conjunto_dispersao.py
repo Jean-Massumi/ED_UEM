@@ -1,11 +1,13 @@
 from __future__ import annotations
 from ed import array
 
-TAMANHO_INCIAL = 10
+TAMANHO_INICIAL = 10
 
-FATOR_CRESCIMENTO = 2
+FATOR_CRESCIMENTO = FATOR_DECRESCIMENTO = 2
 
-FATOR_CARGA = 0.7
+FATOR_CARGA_MAXIMA = 0.7
+
+FATOR_CARGA_MINIMA = 0.2
 class Conjunto:
     '''
     Uma coleção de números inteiros distintos.
@@ -36,14 +38,13 @@ class Conjunto:
     
     tabela_conjunto: array
     qtd_itens: int
-    tabela_ordenada: list
 
     def __init__(self) -> None:
         '''
         Cria um novo conjunto vazio
         '''
         
-        self.tabela_conjunto = array(TAMANHO_INCIAL, None)
+        self.tabela_conjunto = array(TAMANHO_INICIAL, None)
         self.qtd_itens = 0
         
 
@@ -69,7 +70,7 @@ class Conjunto:
         [2, 5, 6, 8, 9, 10, 12, 14, 20, 25, 30, 40]
         '''
 
-        if (self.qtd_itens / len(self.tabela_conjunto)) > FATOR_CARGA:
+        if (self.qtd_itens / len(self.tabela_conjunto)) > FATOR_CARGA_MAXIMA:
             self._cresce()
 
         indice = calcular_indice(valor, len(self.tabela_conjunto))  
@@ -81,7 +82,35 @@ class Conjunto:
         '''
         Remove o *valor* do conjunto, se ele estiver presente.
         
+        Exemplos
+        >>> c = Conjunto()
+        >>> c.insere(20)
+        >>> c.insere(10)
+        >>> c.insere(5)
+        >>> c.insere(30)
+        >>> c.insere(40)
+        >>> c.insere(25)
+        >>> c.insere(8)
+        >>> c.insere(2)
+        >>> c.insere(6)
+        >>> c.insere(9)
+        >>> c.insere(12)
+        >>> c.insere(14)
+        >>> c.remove(9)
+        >>> c.remove(2)
+        >>> c.remove(12)
+        >>> c.remove(14)
+        >>> c.em_ordem()
+        [5, 6, 8, 10, 20, 25, 30, 40]
         '''
+        # Diminui caso a quantidade de elementos seja menor ou igual a 20%
+        if (self.qtd_itens / len(self.tabela_conjunto)) <= FATOR_CARGA_MINIMO: 
+            self._diminui() #implementar
+            
+        indice = calcular_indice(valor, len(self.tabela_conjunto))
+        
+        self._auxilia_remocao(valor, indice)
+
 
     def intersecao(self, outro: Conjunto) -> Conjunto:
         '''
@@ -114,13 +143,52 @@ class Conjunto:
             self._auxilia_insere(val, (indice + 1))
             
         
+    def _auxilia_remocao(self, val:int, indice: int) -> None:
+        if self.tabela_conjunto[indice] is None:
+            return
+
+        elif self.tabela_conjunto[indice] == val: #remover e marcar
+            self.tabela_conjunto[indice] = "/"  
+
+        else: # "/" ou valor numérico
+            self._auxilia_remocao(val, (indice + 1))  
+            
+            
+    def _cresce(self):
+        capacidade = int((len(self.tabela_conjunto)) * FATOR_CRESCIMENTO)
+        nova_tabela = array(capacidade, None)
+        
+        tabela_auxiliar = self.tabela_conjunto
+        self.tabela_conjunto = nova_tabela
+
+        for val in (tabela_auxiliar):
+            if val is not None or val != "/":
+                indice = calcular_indice(val, capacidade)
+                self._auxilia_insere(self, val, indice)
+            
+            
+    def _diminui(self):
+        capacidade = int((len(self.tabela_conjunto)) / FATOR_DECRESCIMENTO)
+        nova_tabela = array(capacidade, None)
+
+        tabela_auxiliar = self.tabela_conjunto
+        self.tabela_conjunto = nova_tabela
+
+        for val in (tabela_auxiliar):
+            if val is not None or val != "/":
+                indice = calcular_indice(val, capacidade)
+                self._auxilia_insere(self, val, indice)
+
+
+
+    
        
-def inicializa_heap(lst: array) -> None:
+def inicializa_heap(lst: list[int]) -> None:
     for i in reversed(range(len(lst) // 2)):
         concerta_heap(lst, len(lst), i)
         
         
-def ordena_heap(lst: array) -> None:
+def ordena_heap(lst: list[int]) -> None:
     inicializa_heap(lst)
     for i in reversed(range(1, len(lst))):
 
@@ -129,29 +197,29 @@ def ordena_heap(lst: array) -> None:
         concerta_heap(lst, i, 0)
                 
         
-        
 def concerta_heap(lst: list[int], tam: int, i: int):
     assert i < tam <= len(lst)
  
-    fesq = 2 * i + 1
-    fdir = 2 * i + 2
-    imax = i
+    precisa_ajustar = True
+    
+    while precisa_ajustar:
+        fesq = 2 * i + 1
+        fdir = 2 * i + 2
+        imax = i
 
-    if fesq < tam and lst[fesq] > lst[imax]:
-        imax = fesq
+        if fesq < tam and lst[fesq] > lst[imax]:
+            imax = fesq
+            
+        if fdir < tam and lst[fdir] > lst[imax]:
+            imax = fdir
+            
+        if imax != i:
+            lst[i], lst[imax] = lst[imax], lst[i]
+            i = imax
         
-    if fdir < tam and lst[fdir] > lst[imax]:
-        imax = fdir
-        
-    if imax != i:
-        lst[i], lst[imax] = lst[imax], lst[i]
-        
-        # while imax != i:
-        #     ...
-        concerta_heap(lst, tam, imax)
-        
+        else:
+            precisa_ajustar = False
          
-        
         
 def calcular_indice(valor: int, tam: int) -> int:
     return valor % tam
